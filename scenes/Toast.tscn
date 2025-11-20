@@ -1,0 +1,38 @@
+[gd_scene load_steps=3 format=3 uid="uid://2ubqmd3px7wj"]
+
+[ext_resource type="Script" uid="uid://c4fvahxd63mip" path="res://scripts/Toast.gd" id="1_1bt00"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1bt00"]
+bg_color = Color(0, 0, 0, 0.6)
+border_width_left = 2
+border_width_right = 2
+border_color = Color(0.8406308, 0.7062913, 0, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 15
+shadow_offset = Vector2(8, 8)
+
+[node name="Toast" type="PanelContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_1bt00")
+script = ExtResource("1_1bt00")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Label" type="Label" parent="MarginContainer"]
+custom_minimum_size = Vector2(450, 75)
+layout_mode = 2
+text = "Test"
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
