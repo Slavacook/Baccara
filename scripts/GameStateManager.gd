@@ -79,6 +79,101 @@ func get_action_name(action: Action) -> String:
 # ФУНКЦИИ: Основная логика
 # ========================================
 
+# Определить состояние игры на основе карт на столе
+# Параметры:
+#   cards_hidden: bool - карты скрыты?
+#   player_hand: Array[Card] - рука игрока (2 карты)
+#   banker_hand: Array[Card] - рука банкира (2 карты)
+#   player_third: Card или null - третья карта игрока
+#   banker_third: Card или null - третья карта банкира
+func determine_state(
+	cards_hidden: bool,
+	player_hand: Array,  # Array[Card]
+	banker_hand: Array,  # Array[Card]
+	player_third = null,  # Card или null
+	banker_third = null   # Card или null
+) -> GameState:
+
+	# ========================================
+	# State 1: Карты скрыты
+	# ========================================
+	if cards_hidden or player_hand.size() < 2 or banker_hand.size() < 2:
+		return GameState.WAITING
+
+	# Вычисляем значения рук (первые 2 карты)
+	var player_value = BaccaratRules.hand_value(player_hand.slice(0, 2))
+	var banker_value = BaccaratRules.hand_value(banker_hand.slice(0, 2))
+
+	# ========================================
+	# State 6: Натуральные 8-9
+	# ========================================
+	if player_value >= 8 or banker_value >= 8:
+		return GameState.CHOOSE_WINNER
+
+	# ========================================
+	# State 6: Особые комбинации (6v7, 7v6, 7v7, 6v6)
+	# ========================================
+	if _is_special_combination(player_value, banker_value):
+		return GameState.CHOOSE_WINNER
+
+	# ========================================
+	# Если игрок НЕ взял третью карту
+	# ========================================
+	if player_third == null:
+		# Игрок должен брать карту (0-5)
+		if player_value in [0, 1, 2, 3, 4, 5]:
+			# Банкир 0-2 → обоим нужна третья карта
+			if banker_value in [0, 1, 2]:
+				return GameState.CARD_TO_EACH
+			# Банкир 3-7 → только игроку нужна третья карта
+			else:  # banker_value in [3, 4, 5, 6, 7]
+				return GameState.CARD_TO_PLAYER
+
+		# Игрок стоит (6-7)
+		else:  # player_value in [6, 7]
+			# Банкир 0-5 → только банкиру нужна третья карта
+			if banker_value in [0, 1, 2, 3, 4, 5]:
+				return GameState.CARD_TO_BANKER
+			# Банкир 6-7 → оба стоят, выбор победителя
+			else:  # banker_value in [6, 7]
+				return GameState.CHOOSE_WINNER
+
+	# ========================================
+	# Если игрок УЖЕ взял третью карту
+	# ========================================
+	else:
+		# Банкир уже взял третью → выбор победителя
+		if banker_third != null:
+			return GameState.CHOOSE_WINNER
+
+		# Банкир с 7 всегда стоит
+		if banker_value == 7:
+			return GameState.CHOOSE_WINNER
+
+		# Банкир 0-2 всегда берёт (но это уже обработано в CARD_TO_EACH)
+		# Банкир 3-6 → проверяем по сложным правилам
+		if banker_value in [3, 4, 5, 6]:
+			# Используем правила из BaccaratRules
+			var player_drew = true
+			if BaccaratRules.banker_should_draw(banker_hand.slice(0, 2), player_drew, player_third):
+				return GameState.CARD_TO_BANKER_AFTER_PLAYER
+			else:
+				return GameState.CHOOSE_WINNER
+
+	# ========================================
+	# Fallback: все карты открыты
+	# ========================================
+	return GameState.CHOOSE_WINNER
+
+# Проверка особых комбинаций (6v7, 7v6, 7v7, 6v6)
+func _is_special_combination(player_value: int, banker_value: int) -> bool:
+	# Обе руки должны быть 6 или 7
+	if player_value not in [6, 7] or banker_value not in [6, 7]:
+		return false
+
+	# 6v7, 7v6, 7v7, 6v6
+	return true
+
 # Обновить текущее состояние игры
 func update_state(new_state: GameState):
 	if new_state != current_state:
@@ -95,3 +190,15 @@ func get_current_state() -> GameState:
 func reset():
 	update_state(GameState.WAITING)
 	print("🔄 Состояние сброшено в WAITING")
+
+# Определить и обновить состояние на основе карт
+# Удобный метод для вызова из GameController
+func determine_and_update_state(
+	cards_hidden: bool,
+	player_hand: Array,
+	banker_hand: Array,
+	player_third = null,
+	banker_third = null
+):
+	var new_state = determine_state(cards_hidden, player_hand, banker_hand, player_third, banker_third)
+	update_state(new_state)
