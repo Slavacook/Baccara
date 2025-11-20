@@ -98,6 +98,11 @@ func _ready():
 	ui_manager.help_popup.hide()
 	ui_manager.update_action_button(Localization.t("ACTION_BUTTON_CARDS"))
 
+	# ← НОВАЯ СИСТЕМА: Инициализация GameStateManager
+	GameStateManager.reset()  # Начальное состояние WAITING
+	GameStateManager.state_changed.connect(_on_game_state_changed)
+	print("🎮 GameStateManager инициализирован")
+
 	# ← Инициализация лимитов из GameModeManager (не из config!)
 	var cfg = GameModeManager.get_config()
 	limits_manager.set_limits(
@@ -124,13 +129,26 @@ func _on_limits_changed(min_bet: int, max_bet: int, step: int, tie_min: int, tie
 	)
 
 func _on_winner_selected(chosen: String):
-	# ← ИСПРАВЛЕНО: Проверяем, можно ли выбирать победителя (игра завершена)
+	# ← НОВАЯ СИСТЕМА: Проверка через GameStateManager
+	var new_system_ok = GameStateManager.is_action_valid(GameStateManager.Action.SELECT_WINNER)
+	print("📊 [НОВАЯ СИСТЕМА] Можно выбрать победителя? %s (State: %s)" % [new_system_ok, GameStateManager.get_state_name(GameStateManager.current_state)])
+
+	# ← СТАРАЯ СИСТЕМА: Проверяем через phase_manager
 	if not phase_manager.can_choose_winner():
 		toast_manager.show_error(Localization.t("ERR_FINISH_DEAL"))
 		stats_manager.increment_error("winner_early")  # ← Ошибка: выбор победителя раньше времени
 		if is_survival_mode:
 			survival_ui.lose_life()
+
+		# Сравниваем с новой системой
+		if new_system_ok:
+			print("⚠️ [РАСХОЖДЕНИЕ] Старая система: ОШИБКА, Новая система: OK")
+
 		return
+
+	# Сравниваем с новой системой
+	if not new_system_ok:
+		print("⚠️ [РАСХОЖДЕНИЕ] Старая система: OK, Новая система: ОШИБКА")
 
 	var actual = BaccaratRules.get_winner(phase_manager.player_hand, phase_manager.banker_hand)
 	var res = _format_result()
@@ -234,6 +252,13 @@ func _on_settings_button_pressed():
 		if settings_popup.visible:
 			settings_popup.hide()
 		else:
+			# ← НОВАЯ СИСТЕМА: Проверка блокировки настроек
+			if not GameStateManager.can_change_settings():
+				var msg = GameStateManager.get_settings_lock_message()
+				toast_manager.show_error(msg)
+				print("🔒 [НОВАЯ СИСТЕМА] " + msg)
+				return
+
 			settings_popup.popup_centered()
 
 # ← Обработчик изменения режима игры (новое)
@@ -316,3 +341,13 @@ func _on_hint_used():
 		stats_manager.update_stats()
 		toast_manager.show_info("💡 Подсказка использована (-10 очков)")
 		print("💡 Подсказка: -10 очков")
+
+# ========================================
+# НОВАЯ СИСТЕМА: Обработчики GameStateManager
+# ========================================
+
+# Обработчик изменения состояния игры
+func _on_game_state_changed(old_state: int, new_state: int):
+	var old_name = GameStateManager.get_state_name(old_state)
+	var new_name = GameStateManager.get_state_name(new_state)
+	print("📊 [НОВАЯ СИСТЕМА] Состояние: %s → %s" % [old_name, new_name])
