@@ -187,10 +187,10 @@ texture_hover = ExtResource("8_mcffj")
 
 [node name="HelpButton" type="Button" parent="."]
 custom_minimum_size = Vector2(40, 40)
-offset_left = 971.0
-offset_top = -9.0
-offset_right = 1020.0
-offset_bottom = 33.0
+offset_left = 969.0
+offset_top = 6.0
+offset_right = 1018.0
+offset_bottom = 48.0
 theme_override_colors/font_color = Color(0.8745098, 0.7921569, 0.57254905, 0.35686275)
 theme_override_font_sizes/font_size = 24
 text = "?"
@@ -235,10 +235,10 @@ pivot_offset = Vector2(250, 250)
 texture_normal = ExtResource("5_aug50")
 
 [node name="SettingsButton" type="Button" parent="."]
-offset_left = 1076.0
-offset_top = 78.0
-offset_right = 1116.0
-offset_bottom = 121.5
+offset_left = 1072.0
+offset_top = 3.0
+offset_right = 1110.5
+offset_bottom = 38.5
 scale = Vector2(2, 2)
 text = "⚙️"
 

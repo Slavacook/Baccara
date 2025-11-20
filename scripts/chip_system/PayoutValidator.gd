@@ -74,8 +74,9 @@ func calculate_hint(expected: float, denominations: Array) -> Array:
 			break
 
 	# Проверка: если остался остаток, значит невозможно составить точную сумму
+	# Примечание: не используем push_warning() чтобы не ломать unit тесты
 	if remaining >= FLOAT_EPSILON:
-		push_warning("PayoutValidator: Невозможно составить сумму %.2f из доступных номиналов" % expected)
+		print("PayoutValidator: Невозможно составить точную сумму %.2f из доступных номиналов" % expected)
 
 	return result
 

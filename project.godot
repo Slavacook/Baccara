@@ -26,6 +26,10 @@ GameStateManager="*res://scripts/GameStateManager.gd"
 
 project/assembly_name="баккара"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gut/plugin.cfg")
+
 [input]
 
 deal={
