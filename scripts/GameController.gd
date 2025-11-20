@@ -129,26 +129,15 @@ func _on_limits_changed(min_bet: int, max_bet: int, step: int, tie_min: int, tie
 	)
 
 func _on_winner_selected(chosen: String):
-	# ← НОВАЯ СИСТЕМА: Проверка через GameStateManager
-	var new_system_ok = GameStateManager.is_action_valid(GameStateManager.Action.SELECT_WINNER)
-	print("📊 [НОВАЯ СИСТЕМА] Можно выбрать победителя? %s (State: %s)" % [new_system_ok, GameStateManager.get_state_name(GameStateManager.current_state)])
-
-	# ← СТАРАЯ СИСТЕМА: Проверяем через phase_manager
-	if not phase_manager.can_choose_winner():
-		toast_manager.show_error(Localization.t("ERR_FINISH_DEAL"))
-		stats_manager.increment_error("winner_early")  # ← Ошибка: выбор победителя раньше времени
+	# ← НОВАЯ СИСТЕМА: Проверка через GameStateManager (заменяет phase_manager.can_choose_winner())
+	if not GameStateManager.is_action_valid(GameStateManager.Action.SELECT_WINNER):
+		var error_msg = GameStateManager.get_error_message(GameStateManager.Action.SELECT_WINNER)
+		toast_manager.show_error(error_msg)
+		stats_manager.increment_error("winner_early")
 		if is_survival_mode:
 			survival_ui.lose_life()
-
-		# Сравниваем с новой системой
-		if new_system_ok:
-			print("⚠️ [РАСХОЖДЕНИЕ] Старая система: ОШИБКА, Новая система: OK")
-
+		print("🚫 [НОВАЯ СИСТЕМА] %s" % error_msg)
 		return
-
-	# Сравниваем с новой системой
-	if not new_system_ok:
-		print("⚠️ [РАСХОЖДЕНИЕ] Старая система: OK, Новая система: ОШИБКА")
 
 	var actual = BaccaratRules.get_winner(phase_manager.player_hand, phase_manager.banker_hand)
 	var res = _format_result()
