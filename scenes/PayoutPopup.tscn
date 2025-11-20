@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cq8vx7m5hdj2p"]
 
-[ext_resource type="Script" path="res://scripts/PayoutPopup.gd" id="1_payout"]
+[ext_resource type="Script" path="res://scripts/popups/PayoutPopup.gd" id="1_payout"]
 
 [node name="PayoutPopup" type="PopupPanel"]
 visible = true
