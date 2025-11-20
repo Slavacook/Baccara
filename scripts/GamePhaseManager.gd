@@ -52,18 +52,30 @@ func reset():
 	change_state(StartStateClass.new(self))
 	ui.reset_ui()
 
+	# ← НОВАЯ СИСТЕМА: Сброс состояния в WAITING
+	_update_game_state_manager()
+
 func deal_first_four():
 	player_hand = [deck.draw(), deck.draw()]
 	banker_hand = [deck.draw(), deck.draw()]
 	ui.show_first_four_cards(player_hand, banker_hand)
+
+	# ← НОВАЯ СИСТЕМА: Обновить состояние после раздачи
+	_update_game_state_manager()
 
 func draw_player_third():
 	player_hand.append(deck.draw())
 	ui.show_player_third_card(player_hand[2])
 	ui.hide_player_toggle()
 
+	# ← НОВАЯ СИСТЕМА: Обновить состояние после третьей карты игрока
+	_update_game_state_manager()
+
 func draw_banker_third():
 	banker_hand.append(deck.draw())
+
+	# ← НОВАЯ СИСТЕМА: Обновить состояние после третьей карты банкира
+	_update_game_state_manager()
 	ui.show_banker_third_card(banker_hand[2])
 	ui.hide_banker_toggle()
 
@@ -115,3 +127,25 @@ func can_choose_winner() -> bool:
 			return natural or no_third
 
 	return false
+
+# ========================================
+# НОВАЯ СИСТЕМА: Обновление GameStateManager
+# ========================================
+
+# Обновить состояние в GameStateManager на основе текущих карт
+func _update_game_state_manager():
+	# Определяем скрыты ли карты (StartState)
+	var cards_hidden = current_state != null and current_state.get_script().resource_path.ends_with("StartState.gd")
+
+	# Получаем третьи карты (если есть)
+	var player_third_card = player_hand[2] if player_hand.size() > 2 else null
+	var banker_third_card = banker_hand[2] if banker_hand.size() > 2 else null
+
+	# Обновляем состояние
+	GameStateManager.determine_and_update_state(
+		cards_hidden,
+		player_hand,
+		banker_hand,
+		player_third_card,
+		banker_third_card
+	)
