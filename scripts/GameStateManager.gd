@@ -202,3 +202,133 @@ func determine_and_update_state(
 ):
 	var new_state = determine_state(cards_hidden, player_hand, banker_hand, player_third, banker_third)
 	update_state(new_state)
+
+# ========================================
+# ФУНКЦИИ: Валидация действий
+# ========================================
+
+# Проверить допустимость действия в текущем состоянии
+func is_action_valid(action: Action, state: GameState = current_state) -> bool:
+	match state:
+		GameState.WAITING:
+			# В ожидании можно только раздать карты
+			return action == Action.DEAL_CARDS
+
+		GameState.CARD_TO_EACH:
+			# Нужна карта каждому (но проверяем отдельно player и banker)
+			# Это специальный случай - оба должны быть заказаны
+			return action in [Action.PLAYER_THIRD, Action.BANKER_THIRD]
+
+		GameState.CARD_TO_PLAYER:
+			# Только карта игроку
+			return action == Action.PLAYER_THIRD
+
+		GameState.CARD_TO_BANKER, GameState.CARD_TO_BANKER_AFTER_PLAYER:
+			# Только карта банкиру
+			return action == Action.BANKER_THIRD
+
+		GameState.CHOOSE_WINNER:
+			# Можно выбрать победителя или нажать "Карты" (не ошибка, просто ничего не делает)
+			return action in [Action.SELECT_WINNER, Action.DEAL_CARDS]
+
+		_:
+			return false
+
+# Получить список допустимых действий для состояния
+func get_valid_actions(state: GameState = current_state) -> Array:
+	var actions: Array = []
+
+	match state:
+		GameState.WAITING:
+			actions = [Action.DEAL_CARDS]
+		GameState.CARD_TO_EACH:
+			actions = [Action.PLAYER_THIRD, Action.BANKER_THIRD]  # Оба!
+		GameState.CARD_TO_PLAYER:
+			actions = [Action.PLAYER_THIRD]
+		GameState.CARD_TO_BANKER, GameState.CARD_TO_BANKER_AFTER_PLAYER:
+			actions = [Action.BANKER_THIRD]
+		GameState.CHOOSE_WINNER:
+			actions = [Action.SELECT_WINNER]
+
+	return actions
+
+# Получить сообщение об ошибке для недопустимого действия
+func get_error_message(action: Action, state: GameState = current_state) -> String:
+	# Если действие допустимо, нет ошибки
+	if is_action_valid(action, state):
+		return ""
+
+	# Генерируем сообщение об ошибке
+	match state:
+		GameState.WAITING:
+			match action:
+				Action.PLAYER_THIRD, Action.BANKER_THIRD:
+					return "Сначала нажмите кнопку \"Карты\""
+				Action.SELECT_WINNER:
+					return "Игра ещё не началась"
+				_:
+					return "Недопустимое действие"
+
+		GameState.CARD_TO_EACH:
+			match action:
+				Action.SELECT_WINNER:
+					return "Сначала закажите карты каждому (игроку И банкиру)"
+				Action.DEAL_CARDS:
+					return "Закажите третьи карты игроку И банкиру"
+				_:
+					return "Недопустимое действие"
+
+		GameState.CARD_TO_PLAYER:
+			match action:
+				Action.BANKER_THIRD:
+					return "Банкиру карта не нужна! Только игроку"
+				Action.SELECT_WINNER:
+					return "Сначала откройте карты"
+				Action.DEAL_CARDS:
+					return "Закажите третью карту игроку"
+				_:
+					return "Недопустимое действие"
+
+		GameState.CARD_TO_BANKER, GameState.CARD_TO_BANKER_AFTER_PLAYER:
+			match action:
+				Action.PLAYER_THIRD:
+					return "Игроку карта не нужна! Только банкиру"
+				Action.SELECT_WINNER:
+					return "Сначала откройте карты"
+				Action.DEAL_CARDS:
+					return "Закажите третью карту банкиру"
+				_:
+					return "Недопустимое действие"
+
+		GameState.CHOOSE_WINNER:
+			match action:
+				Action.PLAYER_THIRD, Action.BANKER_THIRD:
+					return "Все карты уже открыты. Выберите победителя"
+				_:
+					return "Выберите победителя"
+
+		_:
+			return "Неизвестная ошибка"
+
+# Проверка специального случая State 2: обе карты должны быть заказаны
+func is_both_third_cards_selected(player_selected: bool, banker_selected: bool, state: GameState = current_state) -> bool:
+	if state != GameState.CARD_TO_EACH:
+		return true  # Не применимо для других состояний
+
+	return player_selected and banker_selected
+
+# ========================================
+# ФУНКЦИИ: Блокировка настроек
+# ========================================
+
+# Можно ли менять настройки (режим игры, лимиты)?
+# Настройки можно менять только в состояниях WAITING и CHOOSE_WINNER
+func can_change_settings(state: GameState = current_state) -> bool:
+	return state in [GameState.WAITING, GameState.CHOOSE_WINNER]
+
+# Сообщение почему нельзя менять настройки
+func get_settings_lock_message(state: GameState = current_state) -> String:
+	if can_change_settings(state):
+		return ""  # Нет блокировки
+
+	return "Нельзя менять настройки во время раздачи! Завершите раунд."
