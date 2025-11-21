@@ -7,7 +7,6 @@ var deck: Deck
 var card_manager: CardTextureManager
 var ui_manager: UIManager
 var phase_manager: GamePhaseManager
-var bet_manager: BetManager
 var limits_manager: LimitsManager
 var limits_popup: PopupPanel
 var limits_button: Button
@@ -71,16 +70,10 @@ func _ready():
 	GameModeManager.load_saved_mode()
 	_load_survival_mode_setting()
 	
-	# ← Фазы и ставки
+	# ← Фазы
 	phase_manager = GamePhaseManager.new(deck, card_manager, ui_manager)
 	phase_manager.set_game_controller(self)  # ← Передаём ссылку на GameController
-	bet_manager = BetManager.new(
-		ui_manager.bet_popup,
-		ui_manager.bet_chip,
-		ui_manager.tie_chip,
-		config.commission_rate
-	)
-	
+
 	# Сигналы
 	ui_manager.action_button_pressed.connect(phase_manager.on_action_pressed)
 	ui_manager.player_third_toggled.connect(phase_manager.on_player_third_toggled)
