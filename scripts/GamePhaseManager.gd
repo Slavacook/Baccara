@@ -72,6 +72,7 @@ func draw_player_third():
 	player_hand.append(deck.draw())
 	ui.show_player_third_card(player_hand[2])
 	ui.hide_player_toggle()  # ← Скрыть toggle после раздачи карты
+	player_third_selected = false  # ← Сбросить флаг после раздачи
 
 	# ← Обновить состояние после третьей карты игрока
 	_update_game_state_manager()
@@ -80,6 +81,7 @@ func draw_banker_third():
 	banker_hand.append(deck.draw())
 	ui.show_banker_third_card(banker_hand[2])
 	ui.hide_banker_toggle()  # ← Скрыть toggle после раздачи карты
+	banker_third_selected = false  # ← Сбросить флаг после раздачи
 
 	# ← Обновить состояние после третьей карты банкира
 	_update_game_state_manager()
