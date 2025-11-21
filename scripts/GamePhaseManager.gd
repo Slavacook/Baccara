@@ -71,7 +71,7 @@ func deal_first_four():
 func draw_player_third():
 	player_hand.append(deck.draw())
 	ui.show_player_third_card(player_hand[2])
-	# НЕ скрываем toggle - оставляем для обучения через ошибки
+	ui.hide_player_toggle()  # ← Скрыть toggle после раздачи карты
 
 	# ← Обновить состояние после третьей карты игрока
 	_update_game_state_manager()
@@ -79,7 +79,7 @@ func draw_player_third():
 func draw_banker_third():
 	banker_hand.append(deck.draw())
 	ui.show_banker_third_card(banker_hand[2])
-	# НЕ скрываем toggle - оставляем для обучения через ошибки
+	ui.hide_banker_toggle()  # ← Скрыть toggle после раздачи карты
 
 	# ← Обновить состояние после третьей карты банкира
 	_update_game_state_manager()
@@ -103,6 +103,11 @@ func on_action_pressed():
 	# WAITING: Раздать первые 4 карты
 	if state == GameStateManager.GameState.WAITING:
 		deal_first_four()
+		return
+
+	# CARD_TO_BANKER_AFTER_PLAYER: Карта банкиру после игрока (особая логика)
+	if state == GameStateManager.GameState.CARD_TO_BANKER_AFTER_PLAYER:
+		_validate_banker_after_player()
 		return
 
 	# Остальные состояния: валидация выбора третьих карт
@@ -239,6 +244,43 @@ func _handle_banker_after_player():
 	else:
 		# Банкиру не нужна карта - завершаем игру
 		toast.show_info(Localization.t("INFO_ALL_OPENED_CHOOSE_WINNER"))
+		complete_game()
+
+# Валидация карты банкиру после того, как игрок уже получил третью карту
+func _validate_banker_after_player():
+	var bs = BaccaratRules.hand_value([banker_hand[0], banker_hand[1]])
+	var banker_draw = _should_banker_draw()
+
+	if banker_draw:
+		# Банкиру НУЖНА карта
+		if not banker_third_selected:
+			toast.show_error(Localization.t("ERR_BANKER_MUST_DRAW", [bs]))
+			stats.increment_error("banker_wrong")
+			on_error_occurred()
+			banker_third_selected = true
+			ui.update_banker_toggle(true)
+			return
+		# Проверка: игрок не должен получать вторую карту
+		if player_third_selected:
+			toast.show_error("Игроку уже дали карту!")
+			stats.increment_error("player_wrong")
+			on_error_occurred()
+			player_third_selected = false
+			ui.update_player_toggle(false)
+			return
+		# Всё правильно - раздаём карту банкиру
+		draw_banker_third()
+		complete_game()
+	else:
+		# Банкиру НЕ нужна карта
+		if banker_third_selected:
+			toast.show_error(Localization.t("ERR_BANKER_NO_DRAW", [bs]))
+			stats.increment_error("banker_wrong")
+			on_error_occurred()
+			banker_third_selected = false
+			ui.update_banker_toggle(false)
+			return
+		# Всё правильно - игра завершена
 		complete_game()
 
 # ========================================
