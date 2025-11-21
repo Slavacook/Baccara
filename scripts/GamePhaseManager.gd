@@ -43,6 +43,10 @@ func reset():
 	ui.reset_ui()
 	ui.update_action_button(Localization.t("ACTION_BUTTON_CARDS"))
 
+	# ← Состояние WAITING: отключить toggles, включить кнопку "карты"
+	ui.disable_toggles()
+	ui.enable_action_button()
+
 	# ← Сброс состояния в WAITING
 	_update_game_state_manager()
 
@@ -57,6 +61,9 @@ func deal_first_four():
 	ui.update_banker_toggle(false)
 
 	ui.show_first_four_cards(player_hand, banker_hand)
+
+	# ← Включить toggles после раздачи (теперь можно заказывать карты)
+	ui.enable_toggles()
 
 	# ← Обновить состояние после раздачи
 	_update_game_state_manager()
@@ -79,6 +86,7 @@ func draw_banker_third():
 
 func complete_game():
 	ui.hide_both_toggles()
+	ui.disable_action_button()  # ← Отключить кнопку "карты" при завершении
 	ui.update_action_button(Localization.t("ACTION_BUTTON_CARDS"))
 	toast.show_info(Localization.t("INFO_ALL_OPENED_CHOOSE_WINNER"))
 

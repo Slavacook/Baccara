@@ -149,6 +149,26 @@ func update_banker_toggle(selected: bool):
 func update_action_button(text: String):
 	action_button.text = text
 
+# ← Включить/отключить toggles (для состояния WAITING)
+func enable_toggles():
+	player_third_toggle.mouse_filter = Control.MOUSE_FILTER_STOP
+	banker_third_toggle.mouse_filter = Control.MOUSE_FILTER_STOP
+	player_third_toggle.modulate = Color(1, 1, 1, 1)  # Полностью видимый
+	banker_third_toggle.modulate = Color(1, 1, 1, 1)
+
+func disable_toggles():
+	player_third_toggle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banker_third_toggle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	player_third_toggle.modulate = Color(1, 1, 1, 0.3)  # Полупрозрачный
+	banker_third_toggle.modulate = Color(1, 1, 1, 0.3)
+
+# ← Включить/отключить кнопку "карты"
+func enable_action_button():
+	action_button.disabled = false
+
+func disable_action_button():
+	action_button.disabled = true
+
 func update_lang_button():
 	if lang_button:
 		lang_button.text = Localization.get_lang().to_upper()
