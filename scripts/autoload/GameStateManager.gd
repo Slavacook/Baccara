@@ -1,4 +1,4 @@
-# res://scripts/GameStateManager.gd
+# res://scripts/autoload/GameStateManager.gd
 # Глобальный менеджер состояний игры
 # Определяет текущее состояние игры на основе карт на столе
 extends Node

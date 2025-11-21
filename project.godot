@@ -20,7 +20,8 @@ config/icon="res://icon.svg"
 SaveManager="*res://scripts/SaveManager.gd"
 Localization_auto="*res://scripts/Localization.gd"
 GameModeManager="*res://scripts/GameModeManager.gd"
-GameStateManager="*res://scripts/GameStateManager.gd"
+GameStateManager="*res://scripts/autoload/GameStateManager.gd"
+EventBus="*res://scripts/autoload/EventBus.gd"
 
 [dotnet]
 
