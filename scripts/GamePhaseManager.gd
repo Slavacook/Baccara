@@ -49,26 +49,33 @@ func reset():
 func deal_first_four():
 	player_hand = [deck.draw(), deck.draw()]
 	banker_hand = [deck.draw(), deck.draw()]
+
+	# Сбросить выбор toggles (могли быть выбраны до раздачи)
+	player_third_selected = false
+	banker_third_selected = false
+	ui.update_player_toggle(false)
+	ui.update_banker_toggle(false)
+
 	ui.show_first_four_cards(player_hand, banker_hand)
 
-	# ← НОВАЯ СИСТЕМА: Обновить состояние после раздачи
+	# ← Обновить состояние после раздачи
 	_update_game_state_manager()
 
 func draw_player_third():
 	player_hand.append(deck.draw())
 	ui.show_player_third_card(player_hand[2])
-	ui.hide_player_toggle()
+	# НЕ скрываем toggle - оставляем для обучения через ошибки
 
-	# ← НОВАЯ СИСТЕМА: Обновить состояние после третьей карты игрока
+	# ← Обновить состояние после третьей карты игрока
 	_update_game_state_manager()
 
 func draw_banker_third():
 	banker_hand.append(deck.draw())
-
-	# ← НОВАЯ СИСТЕМА: Обновить состояние после третьей карты банкира
-	_update_game_state_manager()
 	ui.show_banker_third_card(banker_hand[2])
-	ui.hide_banker_toggle()
+	# НЕ скрываем toggle - оставляем для обучения через ошибки
+
+	# ← Обновить состояние после третьей карты банкира
+	_update_game_state_manager()
 
 func complete_game():
 	ui.hide_both_toggles()
@@ -215,17 +222,15 @@ func _validate_and_execute_third_cards():
 
 # Обработка ситуации "банкир после игрока" (банкир 3-6 после третьей игрока)
 func _handle_banker_after_player():
-	var bs = BaccaratRules.hand_value([banker_hand[0], banker_hand[1]])
-
 	# Проверяем, нужна ли карта банкиру по правилам
 	var banker_draw = _should_banker_draw()
 
 	if banker_draw:
-		# Банкиру нужна карта - показываем toggle банкира
-		ui.hide_player_toggle()
+		# Банкиру нужна карта - НЕ скрываем toggles (для обучения через ошибки)
 		toast.show_info(Localization.t("INFO_BANKER_DECISION"))
 	else:
 		# Банкиру не нужна карта - завершаем игру
+		toast.show_info(Localization.t("INFO_ALL_OPENED_CHOOSE_WINNER"))
 		complete_game()
 
 # ========================================

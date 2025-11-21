@@ -132,6 +132,15 @@ func _on_winner_selected(chosen: String):
 	# ← НОВАЯ СИСТЕМА: Проверка через GameStateManager (заменяет phase_manager.can_choose_winner())
 	if not GameStateManager.is_action_valid(GameStateManager.Action.SELECT_WINNER):
 		var error_msg = GameStateManager.get_error_message(GameStateManager.Action.SELECT_WINNER)
+		var current_state = GameStateManager.get_current_state()
+
+		# В состоянии WAITING не отнимать жизнь и не засчитывать ошибку (игра не началась)
+		if current_state == GameStateManager.GameState.WAITING:
+			toast_manager.show_error(error_msg)
+			print("🚫 [НОВАЯ СИСТЕМА] %s (без штрафа)" % error_msg)
+			return
+
+		# В остальных состояниях - отнимать жизнь и засчитывать ошибку
 		toast_manager.show_error(error_msg)
 		stats_manager.increment_error("winner_early")
 		if is_survival_mode:
@@ -324,9 +333,11 @@ func _on_hint_used():
 		print("💡 Подсказка: -1 жизнь")
 	else:
 		# В обычном режиме: отнимаем 10 правильных действий
+		var data = SaveManager.instance.get_data()
 		for i in range(10):
-			if stats_manager.correct > 0:
-				stats_manager.correct -= 1
+			if data.correct > 0:
+				data.correct -= 1
+		SaveManager.instance.save_data()
 		stats_manager.update_stats()
 		toast_manager.show_info("💡 Подсказка использована (-10 очков)")
 		print("💡 Подсказка: -10 очков")

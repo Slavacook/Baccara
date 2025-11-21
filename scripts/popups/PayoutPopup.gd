@@ -298,7 +298,7 @@ func _set_result_header(winner: String):
 # ← Обновить номиналы фишек из GameModeManager
 func _update_chip_denominations():
 	chip_denominations = GameModeManager.get_chip_denominations()
-	print("PayoutPopup: Номиналы фишек обновлены: %s" % chip_denominations)
+	print("PayoutPopup: Номиналы фишек обновлены: ", chip_denominations)
 
 # ← Форматирование числа
 func _format_amount(amount: float) -> String:
