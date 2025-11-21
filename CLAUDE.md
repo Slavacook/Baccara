@@ -83,16 +83,37 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Важно**: UIManager получает ссылку на CardTextureManager для управления текстурами рубашек (?, !, обычная).
 
-### Система ставок: BetManager
+### Система выплат с фишками (Этап 1)
 
-`scripts/BetManager.gd` - управляет попапами ввода выплат:
+**PayoutPopup** (`scripts/popups/PayoutPopup.gd`) - координатор UI для расчёта выплат:
+- Показ попапа с информацией о ставке и выплате
+- Флот фишек разных номиналов (100000, 50000, ..., 0.5)
+- Режимы: Basic (6 номиналов) и Full (12 номиналов)
+- Кнопка "Подсказка" для автоматического расчёта
+- Сигналы: payout_confirmed(is_correct, collected, expected), hint_used()
+
+**ChipStack** (`scripts/chip_system/ChipStack.gd`) - управление одной стопкой фишек:
+- Максимум 20 фишек в стопке (ChipStack.MAX_CHIPS)
+- Методы: add_chip(), remove_chip(), get_total(), is_empty()
+- Масштабирование контейнера: update_scale(scale)
+- Сигналы: chip_added, chip_removed, stack_empty, total_changed
+
+**ChipStackManager** (`scripts/chip_system/ChipStackManager.gd`) - коллекция стопок:
+- Автоматическая сортировка (от крупных к мелким номиналам)
+- Автоматическое переключение 6↔10 слотов при изменении количества стопок
+- Методы: add_chip(denomination), remove_chip(denomination), clear_all()
+- Сигналы: total_changed, slots_changed, stack_added, stack_removed
+
+**PayoutValidator** (`scripts/chip_system/PayoutValidator.gd`) - валидация выплат:
+- validate(collected, expected) → bool (проверка с погрешностью ε=0.01)
+- get_error_message(collected, expected) → String
+- calculate_hint(target_amount, denominations) → Array (жадный алгоритм)
 
 **Логика выплат**:
-- **Банкир**: stake × 0.95 (комиссия 5%) → `int(stake * commission_rate)`
-- **Игрок**: stake × 1.0 (без попапа, сразу сброс)
+- **Банкир**: stake × 0.95 (комиссия 5%)
+  - Особое правило: Classic mode + выигрыш с 6 → stake × 0.5
+- **Игрок**: stake × 1.0
 - **Ничья**: stake × 8.0
-
-**Сигнал**: `bet_confirmed(payout: int, bet_mode: String, is_correct: bool)`
 
 ### Лимиты стола: LimitsManager
 
@@ -117,6 +138,36 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Поддержка ru/en
 - Метод `t(key: String, args: Array = []) -> String` - перевод с подстановкой
 - `set_lang(lang: String)`, `get_lang() -> String`
+
+**EventBus** (`scripts/autoload/EventBus.gd`):
+- Централизованная система событий (event-driven архитектура)
+- 28 сигналов по 8 категориям:
+  - 🎮 Игровой процесс: cards_dealt, player_third_drawn, banker_third_drawn, game_completed, round_reset
+  - ✅ Правильные действия: action_correct, winner_correct
+  - ❌ Ошибки: action_error
+  - 💰 Выплаты: show_payout_popup, payout_correct, payout_wrong, hint_used
+  - 📢 Toast: show_toast_info, show_toast_success, show_toast_error
+  - ⚙️ Настройки: game_mode_changed, language_changed, survival_mode_changed, table_limits_changed
+  - 💔 Режим выживания: life_lost, game_over, game_restarted
+  - 📊 Состояния: game_state_changed
+
+**GameStateManager** (`scripts/autoload/GameStateManager.gd`):
+- Декларативная система состояний игры
+- 6 состояний: WAITING, CARD_TO_EACH, CARD_TO_PLAYER, CARD_TO_BANKER, CARD_TO_BANKER_AFTER_PLAYER, CHOOSE_WINNER
+- Кэширование для производительности (determine_state())
+- Валидация действий: is_action_valid(), get_error_message()
+- Блокировка настроек во время раздачи: can_change_settings()
+
+**StatsManager** (`scripts/StatsManager.gd`):
+- Autoload singleton (подписан на EventBus)
+- Сигналы: action_correct, action_error, payout_correct, payout_wrong
+- Автоматическое обновление статистики через события
+
+**ToastManager** (`scripts/ToastManager.gd`):
+- Autoload singleton (подписан на EventBus)
+- Сигналы: show_toast_info, show_toast_success, show_toast_error
+- Object pooling для Toast узлов (пул из 5 узлов)
+- ToastPool для переиспользования вместо create/destroy
 
 ## Игровой процесс
 
