@@ -22,30 +22,38 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - deck: Deck - колода карт (52 карты, перемешивается при создании)
 - card_manager: CardTextureManager - загрузка текстур карт из assets/cards/
 - ui_manager: UIManager - управление UI элементами и сигналами
-- phase_manager: GamePhaseManager - state machine для игровых фаз
+- phase_manager: GamePhaseManager - управление игровым процессом и валидация действий
 - toast_manager: ToastManager - всплывающие уведомления (успех/ошибка/инфо)
 - bet_manager: BetManager - расчёт ставок и выплат
 - stats_manager: StatsManager - статистика правильных/ошибочных ответов
 - limits_manager: LimitsManager - управление лимитами стола
 ```
 
-### State Machine (Паттерн "Состояние")
+### Система управления состояниями
 
-Игровой процесс управляется через GamePhaseManager, который переключает состояния:
+Игровой процесс управляется через **GameStateManager** (autoload singleton) и **GamePhaseManager**.
 
-**scripts/states/State.gd** - базовый класс с методами:
-- `enter()` - вход в состояние
-- `exit()` - выход из состояния
-- `handle_input(event)` - обработка событий
+**GameStateManager** (`scripts/GameStateManager.gd`) - декларативная система состояний:
+- Определяет текущее состояние игры на основе карт на столе
+- 6 состояний: WAITING, CARD_TO_EACH, CARD_TO_PLAYER, CARD_TO_BANKER, CARD_TO_BANKER_AFTER_PLAYER, CHOOSE_WINNER
+- Валидирует допустимые действия: `is_action_valid(action)`
+- Выдает сообщения об ошибках: `get_error_message(action)`
+- Блокирует изменение настроек во время раздачи: `can_change_settings()`
 
-**Состояния** (в порядке выполнения):
-1. **StartState** - начальное состояние, показывает рубашки карт
-2. **DealingState** - раздача первых 4 карт (по 2 каждой стороне)
-3. **CardsDealtState** - карты розданы, проверка натуральных 8-9
-4. **PlayerCardOpenedState** - открыта третья карта игрока (если нужна)
-5. **RevealedState** - все карты открыты, выбор победителя
+**GamePhaseManager** (`scripts/GamePhaseManager.gd`) - управление игровым процессом:
+- Раздача карт: `deal_first_four()`, `draw_player_third()`, `draw_banker_third()`
+- Валидация действий игрока: `_validate_and_execute_third_cards()`, `_validate_banker_after_player()`
+- Обновление GameStateManager после каждого действия
+- Управление UI toggles и кнопками
+- Обработка ошибок и режима выживания
 
-Переключение состояний: `phase_manager.change_state(NewState.new(self))`
+**Состояния игры** (enum GameStateManager.GameState):
+1. **WAITING** - карты скрыты, ожидание кнопки "Карты"
+2. **CARD_TO_EACH** - банкир 0-2, игрок 0-5 → карта каждому
+3. **CARD_TO_PLAYER** - банкир 3-7, игрок 0-5 → карта игроку
+4. **CARD_TO_BANKER** - банкир 0-5, игрок 6-7 → карта банкиру
+5. **CARD_TO_BANKER_AFTER_PLAYER** - банкир 3-6 после третьей игрока
+6. **CHOOSE_WINNER** - все карты открыты, выбор победителя
 
 ### Правила баккара: BaccaratRules
 
@@ -112,39 +120,46 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Игровой процесс
 
-1. **Старт** → StartState
+1. **Старт** → WAITING
    - Показываются рубашки карт
-   - Кнопка "Раздать карты"
+   - Toggles третьих карт **отключены** (mouse_filter = IGNORE, полупрозрачные)
+   - Кнопка "Раздать карты" активна
+   - Попытка выбрать победителя → toast без штрафа
 
-2. **Раздача** → DealingState
+2. **Раздача** → CARD_TO_PLAYER / CARD_TO_BANKER / CARD_TO_EACH
    - Раздаются 4 карты (2 игроку, 2 банкиру)
-   - Автопереход в CardsDealtState
+   - Toggles **включаются** (можно заказывать третьи карты)
+   - GameStateManager определяет состояние на основе очков
+   - Проверка натуральных (8-9) → сразу CHOOSE_WINNER
 
-3. **Анализ** → CardsDealtState
-   - Проверка натуральных (8-9)
-   - Если есть натуральная → сразу к выбору победителя
-   - Иначе → появляются переключатели третьей карты
+3. **Заказ третьих карт** → валидация в GamePhaseManager
+   - Игрок ставит галочки на toggles (? ↔ !)
+   - Нажимает кнопку "карты" для подтверждения
+   - `_validate_and_execute_third_cards()` проверяет правильность
+   - Если **правильно** → раздача карты, toggle скрывается
+   - Если **неправильно** → toast с ошибкой, штраф (жизнь/очки), toggle остается
 
-4. **Добор карт** → PlayerCardOpenedState / RevealedState
-   - Игрок выбирает, нужна ли третья карта игроку
-   - Система проверяет правильность (BaccaratRules.player_should_draw)
-   - Если неправильно → toast с ошибкой, stats.increment_error
-   - Аналогично для банкира
+4. **Банкир после игрока** → CARD_TO_BANKER_AFTER_PLAYER
+   - После раздачи третьей карты игроку
+   - `_handle_banker_after_player()` показывает toast "Решение банкира"
+   - Игрок выбирает toggle банкира, нажимает "карты"
+   - `_validate_banker_after_player()` валидирует выбор
 
-5. **Выбор победителя** → RevealedState
+5. **Выбор победителя** → CHOOSE_WINNER
+   - Все карты открыты, кнопка "карты" **отключена**
    - Игрок кликает на маркер (Player/Banker/Tie)
-   - Сравнение с BaccaratRules.get_winner()
-   - Если правильно:
-     - **Banker** → BetPopup для расчёта комиссии
-     - **Tie** → BetPopup для расчёта выплаты 8:1
-     - **Player** → сразу сброс (выплата 1:1)
-   - Если неправильно → toast с ошибкой
+   - Проверка через `GameStateManager.is_action_valid(SELECT_WINNER)`
+   - Сравнение с `BaccaratRules.get_winner()`
+   - Если **правильно** → PayoutPopup для расчёта выплаты
+   - Если **неправильно** → toast с ошибкой, штраф
 
-6. **Расчёт выплаты** (для Banker/Tie)
-   - Показывается попап с полем ввода
-   - Игрок вводит сумму выплаты
-   - Проверка: `payout == int(stake * rate)`
-   - Результат → сигнал `bet_confirmed`
+6. **Расчёт выплаты** (PayoutPopup)
+   - Флот фишек разных номиналов (100000, 50000, ..., 0.5)
+   - Игрок собирает стопки фишек (max 20 в стопке)
+   - Кнопка "Подсказка" → автоматический расчёт (жадный алгоритм)
+   - Проверка через `PayoutValidator.validate(collected, expected)`
+   - Если **правильно** → сброс раунда, +1 очко
+   - Если **неправильно** → toast с ошибкой, штраф
 
 ## Конфигурация: GameConfig
 
