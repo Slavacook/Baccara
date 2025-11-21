@@ -22,6 +22,7 @@ Localization_auto="*res://scripts/Localization.gd"
 GameModeManager="*res://scripts/GameModeManager.gd"
 GameStateManager="*res://scripts/autoload/GameStateManager.gd"
 EventBus="*res://scripts/autoload/EventBus.gd"
+StatsManager="*res://scripts/StatsManager.gd"
 
 [dotnet]
 

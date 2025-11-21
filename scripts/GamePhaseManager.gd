@@ -6,7 +6,6 @@ class_name GamePhaseManager
 extends RefCounted
 
 var toast: ToastManager
-var stats: StatsManager  # ← Для обновления статистики
 var game_controller = null  # ← Ссылка на GameController для режима выживания
 
 var player_hand: Array[Card] = []
@@ -18,12 +17,11 @@ var deck: Deck
 var card_manager: CardTextureManager
 var ui: UIManager
 
-func _init(deck_ref: Deck, card_manager_ref: CardTextureManager, ui_ref: UIManager, toast_ref: ToastManager, stats_ref: StatsManager):
+func _init(deck_ref: Deck, card_manager_ref: CardTextureManager, ui_ref: UIManager, toast_ref: ToastManager):
 	deck = deck_ref
 	card_manager = card_manager_ref
 	ui = ui_ref
 	toast = toast_ref
-	stats = stats_ref
 	ui.update_action_button(Localization.t("ACTION_BUTTON_CARDS"))
 
 # ← Установить ссылку на GameController
@@ -139,7 +137,7 @@ func _validate_and_execute_third_cards():
 	if natural or no_third:
 		if player_third_selected or banker_third_selected:
 			toast.show_error(Localization.t("ERR_NATURAL_NO_DRAW"))
-			stats.increment_error("natural_draw")
+			EventBus.action_error.emit("natural_draw", Localization.t("ERR_NATURAL_NO_DRAW"))
 			on_error_occurred()
 			player_third_selected = false
 			banker_third_selected = false
@@ -158,7 +156,7 @@ func _validate_and_execute_third_cards():
 	if banker_draw_always and player_draw:
 		if not player_third_selected or not banker_third_selected:
 			toast.show_error(Localization.t("BOTH_CARDS_NEEDED"))
-			stats.increment_error("both_wrong")
+			EventBus.action_error.emit("both_wrong", Localization.t("BOTH_CARDS_NEEDED"))
 			on_error_occurred()
 			player_third_selected = true
 			banker_third_selected = true
@@ -174,14 +172,14 @@ func _validate_and_execute_third_cards():
 	if player_draw and bs == 7:
 		if not player_third_selected:
 			toast.show_error(Localization.t("ERR_PLAYER_MUST_DRAW", [ps]))
-			stats.increment_error("player_wrong")
+			EventBus.action_error.emit("player_wrong", "")
 			on_error_occurred()
 			player_third_selected = true
 			ui.update_player_toggle(true)
 			return
 		if banker_third_selected:
 			toast.show_error(Localization.t("ERR_BANKER_NO_DRAW", [bs]))
-			stats.increment_error("banker_wrong")
+			EventBus.action_error.emit("banker_wrong", "")
 			on_error_occurred()
 			banker_third_selected = false
 			ui.update_banker_toggle(false)
@@ -194,14 +192,14 @@ func _validate_and_execute_third_cards():
 	if player_draw and bs >= 3 and bs <= 6:
 		if not player_third_selected:
 			toast.show_error(Localization.t("ERR_PLAYER_MUST_DRAW", [ps]))
-			stats.increment_error("player_wrong")
+			EventBus.action_error.emit("player_wrong", "")
 			on_error_occurred()
 			player_third_selected = true
 			ui.update_player_toggle(true)
 			return
 		if banker_third_selected:
 			toast.show_error(Localization.t("BANKER_NO_CARD_YET"))
-			stats.increment_error("banker_wrong")
+			EventBus.action_error.emit("banker_wrong", "")
 			on_error_occurred()
 			banker_third_selected = false
 			ui.update_banker_toggle(false)
@@ -216,14 +214,14 @@ func _validate_and_execute_third_cards():
 	if not player_draw and banker_draw:
 		if not banker_third_selected:
 			toast.show_error(Localization.t("ERR_BANKER_MUST_DRAW", [bs]))
-			stats.increment_error("banker_wrong")
+			EventBus.action_error.emit("banker_wrong", "")
 			on_error_occurred()
 			banker_third_selected = true
 			ui.update_banker_toggle(true)
 			return
 		if player_third_selected:
 			toast.show_error(Localization.t("ERR_PLAYER_NO_DRAW", [ps]))
-			stats.increment_error("player_wrong")
+			EventBus.action_error.emit("player_wrong", "")
 			on_error_occurred()
 			player_third_selected = false
 			ui.update_player_toggle(false)
@@ -257,7 +255,7 @@ func _validate_banker_after_player():
 		# Банкиру НУЖНА карта
 		if not banker_third_selected:
 			toast.show_error(Localization.t("ERR_BANKER_MUST_DRAW", [bs]))
-			stats.increment_error("banker_wrong")
+			EventBus.action_error.emit("banker_wrong", "")
 			on_error_occurred()
 			banker_third_selected = true
 			ui.update_banker_toggle(true)
@@ -265,7 +263,7 @@ func _validate_banker_after_player():
 		# Проверка: игрок не должен получать вторую карту
 		if player_third_selected:
 			toast.show_error("Игроку уже дали карту!")
-			stats.increment_error("player_wrong")
+			EventBus.action_error.emit("player_wrong", "")
 			on_error_occurred()
 			player_third_selected = false
 			ui.update_player_toggle(false)
@@ -277,7 +275,7 @@ func _validate_banker_after_player():
 		# Банкиру НЕ нужна карта
 		if banker_third_selected:
 			toast.show_error(Localization.t("ERR_BANKER_NO_DRAW", [bs]))
-			stats.increment_error("banker_wrong")
+			EventBus.action_error.emit("banker_wrong", "")
 			on_error_occurred()
 			banker_third_selected = false
 			ui.update_banker_toggle(false)
