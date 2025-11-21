@@ -121,6 +121,14 @@ func _card_hash(card) -> int:
 	if card == null:
 		return 0
 
+	# Проверяем валидность объекта
+	if not is_instance_valid(card):
+		return 0
+
+	# Проверяем наличие свойств rank и suit
+	if not ("rank" in card and "suit" in card):
+		return 0
+
 	# Простой хэш: ранг (0-12) * 4 + масть (0-3)
 	var rank_map = {"A": 0, "2": 1, "3": 2, "4": 3, "5": 4, "6": 5, "7": 6, "8": 7, "9": 8, "10": 9, "J": 10, "Q": 11, "K": 12}
 	var suit_map = {"clubs": 0, "hearts": 1, "spades": 2, "diamonds": 3}
