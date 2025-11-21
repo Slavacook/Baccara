@@ -39,6 +39,10 @@ enum Action {
 
 var current_state: GameState = GameState.WAITING
 
+# ← Кэширование для determine_state()
+var _cache_state: GameState = GameState.WAITING  # Кэшированное состояние
+var _cache_hash: int = -1  # Хэш параметров (для проверки валидности кэша)
+
 # ========================================
 # ФУНКЦИИ: Получение информации о состоянии
 # ========================================
@@ -79,6 +83,53 @@ func get_action_name(action: Action) -> String:
 # ФУНКЦИИ: Основная логика
 # ========================================
 
+# Генерировать хэш из параметров для кэширования
+func _hash_params(
+	cards_hidden: bool,
+	player_hand: Array,
+	banker_hand: Array,
+	player_third,
+	banker_third
+) -> int:
+	var h = 0
+
+	# ← Хэш из булевого флага
+	h = h * 2 + (1 if cards_hidden else 0)
+
+	# ← Хэш из размеров рук
+	h = h * 10 + player_hand.size()
+	h = h * 10 + banker_hand.size()
+
+	# ← Хэш из карт игрока (первые 2)
+	for i in range(min(2, player_hand.size())):
+		var card = player_hand[i]
+		h = h * 13 + _card_hash(card)
+
+	# ← Хэш из карт банкира (первые 2)
+	for i in range(min(2, banker_hand.size())):
+		var card = banker_hand[i]
+		h = h * 13 + _card_hash(card)
+
+	# ← Хэш из третьих карт
+	h = h * 13 + (_card_hash(player_third) if player_third != null else 0)
+	h = h * 13 + (_card_hash(banker_third) if banker_third != null else 0)
+
+	return h
+
+# Генерировать хэш из карты
+func _card_hash(card) -> int:
+	if card == null:
+		return 0
+
+	# Простой хэш: ранг (0-12) * 4 + масть (0-3)
+	var rank_map = {"A": 0, "2": 1, "3": 2, "4": 3, "5": 4, "6": 5, "7": 6, "8": 7, "9": 8, "10": 9, "J": 10, "Q": 11, "K": 12}
+	var suit_map = {"clubs": 0, "hearts": 1, "spades": 2, "diamonds": 3}
+
+	var rank_idx = rank_map.get(card.rank, 0)
+	var suit_idx = suit_map.get(card.suit, 0)
+
+	return rank_idx * 4 + suit_idx
+
 # Определить состояние игры на основе карт на столе
 # Параметры:
 #   cards_hidden: bool - карты скрыты?
@@ -94,11 +145,24 @@ func determine_state(
 	banker_third = null   # Card или null
 ) -> GameState:
 
+	# ← Кэширование: вычисляем хэш параметров
+	var params_hash = _hash_params(cards_hidden, player_hand, banker_hand, player_third, banker_third)
+
+	# ← Если хэш совпадает - возвращаем кэш
+	if params_hash == _cache_hash:
+		return _cache_state
+
+	# ← Вспомогательная функция для сохранения в кэш и возврата
+	var _save_and_return = func(state: GameState) -> GameState:
+		_cache_hash = params_hash
+		_cache_state = state
+		return state
+
 	# ========================================
 	# State 1: Карты скрыты
 	# ========================================
 	if cards_hidden or player_hand.size() < 2 or banker_hand.size() < 2:
-		return GameState.WAITING
+		return _save_and_return.call(GameState.WAITING)
 
 	# Вычисляем значения рук (первые 2 карты)
 	var player_value = BaccaratRules.hand_value(player_hand.slice(0, 2))
@@ -108,13 +172,13 @@ func determine_state(
 	# State 6: Натуральные 8-9
 	# ========================================
 	if player_value >= 8 or banker_value >= 8:
-		return GameState.CHOOSE_WINNER
+		return _save_and_return.call(GameState.CHOOSE_WINNER)
 
 	# ========================================
 	# State 6: Особые комбинации (6v7, 7v6, 7v7, 6v6)
 	# ========================================
 	if _is_special_combination(player_value, banker_value):
-		return GameState.CHOOSE_WINNER
+		return _save_and_return.call(GameState.CHOOSE_WINNER)
 
 	# ========================================
 	# Если игрок НЕ взял третью карту
@@ -122,25 +186,25 @@ func determine_state(
 	if player_third == null:
 		# ← ВАЖНО: Если банкир УЖЕ взял третью → выбор победителя
 		if banker_third != null:
-			return GameState.CHOOSE_WINNER
+			return _save_and_return.call(GameState.CHOOSE_WINNER)
 
 		# Игрок должен брать карту (0-5)
 		if player_value in [0, 1, 2, 3, 4, 5]:
 			# Банкир 0-2 → обоим нужна третья карта
 			if banker_value in [0, 1, 2]:
-				return GameState.CARD_TO_EACH
+				return _save_and_return.call(GameState.CARD_TO_EACH)
 			# Банкир 3-7 → только игроку нужна третья карта
 			else:  # banker_value in [3, 4, 5, 6, 7]
-				return GameState.CARD_TO_PLAYER
+				return _save_and_return.call(GameState.CARD_TO_PLAYER)
 
 		# Игрок стоит (6-7)
 		else:  # player_value in [6, 7]
 			# Банкир 0-5 → только банкиру нужна третья карта
 			if banker_value in [0, 1, 2, 3, 4, 5]:
-				return GameState.CARD_TO_BANKER
+				return _save_and_return.call(GameState.CARD_TO_BANKER)
 			# Банкир 6-7 → оба стоят, выбор победителя
 			else:  # banker_value in [6, 7]
-				return GameState.CHOOSE_WINNER
+				return _save_and_return.call(GameState.CHOOSE_WINNER)
 
 	# ========================================
 	# Если игрок УЖЕ взял третью карту
@@ -148,11 +212,11 @@ func determine_state(
 	else:
 		# Банкир уже взял третью → выбор победителя
 		if banker_third != null:
-			return GameState.CHOOSE_WINNER
+			return _save_and_return.call(GameState.CHOOSE_WINNER)
 
 		# Банкир с 7 всегда стоит
 		if banker_value == 7:
-			return GameState.CHOOSE_WINNER
+			return _save_and_return.call(GameState.CHOOSE_WINNER)
 
 		# Банкир 0-2 всегда берёт (но это уже обработано в CARD_TO_EACH)
 		# Банкир 3-6 → проверяем по сложным правилам
@@ -160,14 +224,14 @@ func determine_state(
 			# Используем правила из BaccaratRules
 			var player_drew = true
 			if BaccaratRules.banker_should_draw(banker_hand.slice(0, 2), player_drew, player_third):
-				return GameState.CARD_TO_BANKER_AFTER_PLAYER
+				return _save_and_return.call(GameState.CARD_TO_BANKER_AFTER_PLAYER)
 			else:
-				return GameState.CHOOSE_WINNER
+				return _save_and_return.call(GameState.CHOOSE_WINNER)
 
 	# ========================================
 	# Fallback: все карты открыты
 	# ========================================
-	return GameState.CHOOSE_WINNER
+	return _save_and_return.call(GameState.CHOOSE_WINNER)
 
 # Проверка особых комбинаций (6v7, 7v6, 7v7, 6v6)
 func _is_special_combination(player_value: int, banker_value: int) -> bool:
@@ -193,6 +257,11 @@ func get_current_state() -> GameState:
 # Сбросить состояние в начальное
 func reset():
 	update_state(GameState.WAITING)
+
+	# ← Инвалидируем кэш при сбросе
+	_cache_hash = -1
+	_cache_state = GameState.WAITING
+
 	print("🔄 Состояние сброшено в WAITING")
 
 # Определить и обновить состояние на основе карт
