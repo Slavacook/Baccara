@@ -7,7 +7,6 @@ var deck: Deck
 var card_manager: CardTextureManager
 var ui_manager: UIManager
 var phase_manager: GamePhaseManager
-var toast_manager: ToastManager
 var bet_manager: BetManager
 var limits_manager: LimitsManager
 var limits_popup: PopupPanel
@@ -29,9 +28,7 @@ func _ready():
 		config = GameConfig.new()
 	
 	card_manager = CardTextureManager.new(config)
-	toast_manager = ToastManager.new()
-	add_child(toast_manager)
-	
+
 	ui_manager = UIManager.new(self, card_manager)
 
 	# ← Инициализируем StatsManager (autoload)
@@ -75,7 +72,7 @@ func _ready():
 	_load_survival_mode_setting()
 	
 	# ← Фазы и ставки
-	phase_manager = GamePhaseManager.new(deck, card_manager, ui_manager, toast_manager)
+	phase_manager = GamePhaseManager.new(deck, card_manager, ui_manager)
 	phase_manager.set_game_controller(self)  # ← Передаём ссылку на GameController
 	bet_manager = BetManager.new(
 		ui_manager.bet_popup,
@@ -122,7 +119,7 @@ func _on_limits_button_pressed():
 	)
 
 func _on_limits_changed(min_bet: int, max_bet: int, step: int, tie_min: int, tie_max: int, tie_step: int):
-	toast_manager.show_info(
+	EventBus.show_toast_info.emit(
 		"Лимиты: %d–%d (шаг %d)\nTIE: %d–%d (шаг %d)" % 
 		[min_bet, max_bet, step, tie_min, tie_max, tie_step]
 	)
@@ -135,12 +132,12 @@ func _on_winner_selected(chosen: String):
 
 		# В состоянии WAITING не отнимать жизнь и не засчитывать ошибку (игра не началась)
 		if current_state == GameStateManager.GameState.WAITING:
-			toast_manager.show_error(error_msg)
+			EventBus.show_toast_error.emit(error_msg)
 			print("🚫 [НОВАЯ СИСТЕМА] %s (без штрафа)" % error_msg)
 			return
 
 		# В остальных состояниях - отнимать жизнь и засчитывать ошибку
-		toast_manager.show_error(error_msg)
+		EventBus.show_toast_error.emit(error_msg)
 		EventBus.action_error.emit("winner_early", error_msg)
 		if is_survival_mode:
 			survival_ui.lose_life()
@@ -153,7 +150,7 @@ func _on_winner_selected(chosen: String):
 	var chosen_t = Localization.t("WIN_PLAYER") if chosen == "Player" else Localization.t("WIN_BANKER") if chosen == "Banker" else Localization.t("WIN_TIE")
 
 	if chosen == actual:
-		toast_manager.show_success(Localization.t("WIN_CORRECT", [t, res]))
+		EventBus.show_toast_success.emit(Localization.t("WIN_CORRECT", [t, res]))
 		EventBus.action_correct.emit("winner")
 
 		# ← Показываем новый PayoutPopup для всех вариантов
@@ -180,7 +177,7 @@ func _on_winner_selected(chosen: String):
 
 		payout_popup.show_payout(actual, stake, payout)
 	else:
-		toast_manager.show_error(Localization.t("WIN_INCORRECT", [chosen_t, t, res]))
+		EventBus.show_toast_error.emit(Localization.t("WIN_INCORRECT", [chosen_t, t, res]))
 		EventBus.action_error.emit("winner_wrong", Localization.t("WIN_INCORRECT", [chosen_t, t, res]))
 		if is_survival_mode:
 			survival_ui.lose_life()
@@ -252,7 +249,7 @@ func _on_settings_button_pressed():
 			# ← НОВАЯ СИСТЕМА: Проверка блокировки настроек
 			if not GameStateManager.can_change_settings():
 				var msg = GameStateManager.get_settings_lock_message()
-				toast_manager.show_error(msg)
+				EventBus.show_toast_error.emit(msg)
 				print("🔒 [НОВАЯ СИСТЕМА] " + msg)
 				return
 
@@ -328,7 +325,7 @@ func _on_hint_used():
 	if is_survival_mode:
 		# В режиме выживания: теряем 1 жизнь
 		survival_ui.lose_life()
-		toast_manager.show_info("💡 Подсказка использована (-1 жизнь)")
+		EventBus.show_toast_info.emit("💡 Подсказка использована (-1 жизнь)")
 		print("💡 Подсказка: -1 жизнь")
 	else:
 		# В обычном режиме: отнимаем 10 правильных действий
@@ -338,7 +335,7 @@ func _on_hint_used():
 				data.correct -= 1
 		SaveManager.instance.save_data()
 		StatsManager.instance.update_stats()
-		toast_manager.show_info("💡 Подсказка использована (-10 очков)")
+		EventBus.show_toast_info.emit("💡 Подсказка использована (-10 очков)")
 		print("💡 Подсказка: -10 очков")
 
 # ========================================

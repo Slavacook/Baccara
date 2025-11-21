@@ -23,6 +23,7 @@ GameModeManager="*res://scripts/GameModeManager.gd"
 GameStateManager="*res://scripts/autoload/GameStateManager.gd"
 EventBus="*res://scripts/autoload/EventBus.gd"
 StatsManager="*res://scripts/StatsManager.gd"
+ToastManager="*res://scripts/ToastManager.gd"
 
 [dotnet]
 
