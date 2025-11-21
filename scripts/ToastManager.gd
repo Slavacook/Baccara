@@ -7,6 +7,7 @@ const TOAST_SCENE = preload("res://scenes/Toast.tscn")
 static var instance: ToastManager
 
 var container: VBoxContainer
+var toast_pool: ToastPool  # ← Пул Toast узлов для переиспользования
 
 func _init():
 	if instance == null:
@@ -21,13 +22,17 @@ func _ready():
 
 	if not container:
 		push_error("ToastContainer not found!")
+		return
+
+	# ← Инициализируем пул Toast узлов
+	toast_pool = ToastPool.new(container)
 
 	# Подписываемся на события EventBus
 	EventBus.show_toast_info.connect(_on_show_toast_info)
 	EventBus.show_toast_success.connect(_on_show_toast_success)
 	EventBus.show_toast_error.connect(_on_show_toast_error)
 
-	print("🍞 ToastManager готов! Подписан на EventBus.")
+	print("🍞 ToastManager готов! Подписан на EventBus. Пул: %d узлов." % ToastPool.POOL_SIZE)
 
 # ═══════════════════════════════════════════════════════════════════════════
 # ОБРАБОТЧИКИ СОБЫТИЙ EventBus
@@ -47,16 +52,18 @@ func _on_show_toast_error(message: String):
 # ═══════════════════════════════════════════════════════════════════════════
 
 func show_message(text: String, type: String = "info", duration: float = 2.5):
-	if not container: return
+	if not container or not toast_pool: return
 
-	var toast = TOAST_SCENE.instantiate()
+	# ← Берём Toast из пула (переиспользование)
+	var toast = toast_pool.get_toast()
 	var label_node = toast.get_node("MarginContainer/Label")
 	if label_node:
 		label_node.text = text
 		label_node.add_theme_color_override("font_color", _get_color(type))
 
-	container.add_child(toast)
-	toast.show_message(text, duration)
+	# ← Передаём callback для возврата в пул после анимации
+	var return_callback = func(): toast_pool.return_toast(toast)
+	toast.show_message(text, duration, return_callback)
 
 func show_error(text: String, duration: float = 3.0):
 	show_message(text, "error", duration)
