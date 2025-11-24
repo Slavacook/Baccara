@@ -1,0 +1,119 @@
+5.8
+
+Полное описание проекта: Baccarat Trainer (Godot 4)Цель: Обучающее приложение для дилеров баккара — тренировка правил раздачи и определения победителя.
+Язык: GDScript (Godot 4)
+Состояние: Полностью рабочий, логика 100% соответствует правилам баккара  Структура файлов
+
+res://
+├── assets/
+│   └── ui/
+│       ├── chip_bet_1.png      # TIE
+│       └── chip_bet_2.png      # Banker
+│
+├── resources/
+│   └── GameConfig.gd           # Лимиты по умолчанию
+│
+├── scripts/
+│   ├── GameController.gd       # Главный контроллер
+│   ├── BetManager.gd           # Ставки, попап
+│   ├── BetPopup.gd             # Окно ввода выплаты
+│   ├── LimitsManager.gd        # Лимиты, генерация ставок
+│   ├── TableLimitsPopup.gd     # Меню лимитов
+│   ├── UIManager.gd            # UI: кнопки, чипы, попапы
+│   ├── Localization.gd         # Текст: ru/en
+│   ├── BaccaratRules.gd        # Правила баккара
+│   ├── GamePhaseManager.gd     # Фазы игры
+│   ├── ToastManager.gd         # Тосты
+│   ├── StatsManager.gd         # Статистика
+│   ├── CardTextureManager.gd   # Текстуры карт
+│   └── Deck.gd                 # Колода
+│
+└── scenes/
+	└── Game.tscn               # Главная сцена
+
+
+
+Структура сцены Game.tscn
+
+Game (Node2D) — GameController.gd
+├── BetChip (TextureButton)         # Banker
+├── TieChip (TextureButton)         # TIE (chip_bet_1.png)
+├── BetPopup (PopupPanel)           # BetPopup.gd
+├── LimitsButton (Button)
+├── LimitsPopup (PopupPanel)        # TableLimitsPopup.gd
+├── ActionButton (Button)
+├── HelpButton (Button)
+├── LangButton (Button)
+├── PlayerToggle (CheckBox)
+├── BankerToggle (CheckBox)
+├── WinnerPanel (Control)
+│   ├── PlayerButton
+│   ├── BankerButton
+│   └── TieButton
+└── ToastContainer (Control)
+
+
+
+Как работает игра (логика)Этап 1: Первые 4 картыНажатие "Карты" → раздаётся по 2 карты игроку и банкиру
+Считаются очки: hand_value() % 10
+
+Этап 2: Решение о третьих картах — 4 ситуацииСитуация
+Условие
+Что должен сделать дилер
+1. Завершение
+Натурал (8/9) или 6-6, 7-7, 6-7, 7-6
+Ничего не отмечать → сразу выбор победителя
+2. Обе карты
+Банкир ≤2 и Игрок ≤5
+Отметить обе третьи → нажать "Карты"
+3. Только игрок
+Игрок ≤5 и Банкир 3–6
+Отметить только игрока → "Карты" → ждать
+4. Только игрок (банкир 7)
+Игрок ≤5 и Банкир 7
+Отметить только игрока → "Карты" → конец
+
+После открытия 3-й карты игрока (ситуация 3) → переход в PlayerCardOpenedState
+→ дилер сам решает, нужна ли карта банкиру (по таблице)
+Этап 3: Выбор победителяВсе карты открыты → клик по Player / Banker / Tie
+Проверка → тост + статистика
+При победе Banker → появляется ставка (комиссия 5%)
+
+Особенности реализацииФункция
+Как работает
+Тогглы третьих карт
+TextureRect с gui_input → переключают player_third_selected
+Состояния
+FSM: Start → Dealing → CardsDealt → PlayerCardOpened → Revealed
+Ошибки
+Тосты + SaveManager.increment_error()
+Перевод
+Localization.t("KEY"), переключение без сброса
+Статистика
+user://baccarat_stats.save
+Комиссия
+5% (0.95), ввод вручную → проверка
+
+Как запуститьОткрыть Game.tscn
+Нажать "Карты"
+Следовать тостам
+Отмечать третьи карты вручную
+Нажимать "Карты" для подтверждения
+Выбирать победителя
+
+Для новой нейросети — что важно знатьГлавный файл: GameController.gd — точка входа
+Логика раздачи: CardsDealtState.gd + PlayerCardOpenedState.gd
+UI: UIManager.gd — все get_node() здесь
+Состояния: scripts/states/ — FSM
+Карты: Card.gd + CardTextureManager.gd
+Правила: BaccaratRules.gd — чистые функции
+Тосты: ToastManager.gd — просто show_info/error/success
+Язык: Localization.gd — t("KEY"), set_lang("ru"/"en")
+
+Готово к масштабированию:  Добавить новые правила  
+Добавить анимации  
+Экспорт в Android/iOS  
+Добавить звук
+
+Проект — полностью автономный, без внешних зависимостей.
+Ты — на 100% в курсе.

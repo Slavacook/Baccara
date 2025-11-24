@@ -1,0 +1,70 @@
+[gd_scene load_steps=14 format=3 uid="uid://6nt8xcinibd0"]
+
+[ext_resource type="Script" uid="uid://3g33us4ym5r1" path="res://scripts/FlipCard.gd" id="1_flip"]
+[ext_resource type="Texture2D" uid="uid://bxgut3oh6s8sw" path="res://assets/animation/animation_open_card/open_card_1.png" id="1_rg7gl"]
+[ext_resource type="Texture2D" uid="uid://bti40v4x1wmd0" path="res://assets/animation/animation_open_card/open_card_2.png" id="2_apekn"]
+[ext_resource type="Texture2D" uid="uid://bupv608aq1x0h" path="res://assets/animation/animation_open_card/open_card_3.png" id="3_fmi8r"]
+[ext_resource type="Texture2D" uid="uid://dfq1uvneroypd" path="res://assets/animation/animation_open_card/open_card_4.png" id="4_qgcoj"]
+[ext_resource type="Texture2D" uid="uid://bnr1ecy1lb78t" path="res://assets/animation/animation_open_card/open_card_5.png" id="5_wlj03"]
+[ext_resource type="Texture2D" uid="uid://co6t8ijeehbjd" path="res://assets/animation/animation_open_card/open_card_6.png" id="6_k71fv"]
+[ext_resource type="Texture2D" uid="uid://dr13684kelh8t" path="res://assets/animation/animation_open_card/open_card_7.png" id="7_cv7e7"]
+[ext_resource type="Texture2D" uid="uid://cg8nsjoqi70ya" path="res://assets/animation/animation_open_card/open_card_8.png" id="8_xj5v5"]
+[ext_resource type="Texture2D" uid="uid://ikpc5htslnwk" path="res://assets/animation/animation_open_card/open_card_9.png" id="9_f786b"]
+[ext_resource type="Texture2D" uid="uid://cn7uayylmw18a" path="res://assets/animation/animation_open_card/open_card_10.png" id="10_dj3c1"]
+[ext_resource type="AudioStream" uid="uid://c8i6qcnshcre0" path="res://assets/sound/flip_card8.wav" id="12_fmi8r"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_iqh0e"]
+animations = [{
+"frames": [],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_rg7gl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_apekn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_fmi8r")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_qgcoj")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_wlj03")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_k71fv")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_cv7e7")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_xj5v5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_f786b")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_dj3c1")
+}],
+"loop": false,
+"name": &"flip_card",
+"speed": 15.0
+}]
+
+[node name="FlipCard" type="Node2D"]
+position = Vector2(0, 200)
+script = ExtResource("1_flip")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_iqh0e")
+animation = &"flip_card"
+frame = 9
+frame_progress = 1.0
+
+[node name="FlipSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("12_fmi8r")

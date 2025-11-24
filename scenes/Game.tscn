@@ -1,0 +1,309 @@
+[gd_scene load_steps=21 format=3 uid="uid://bfjp1iwsis27p"]
+
+[ext_resource type="Script" uid="uid://cmdsv8cgwx0jw" path="res://scripts/GameController.gd" id="1_aug50"]
+[ext_resource type="Texture2D" uid="uid://csqohix558l5u" path="res://assets/ui/table_background.png" id="1_qbsmt"]
+[ext_resource type="PackedScene" uid="uid://b8ribk4n0q8w1" path="res://scenes/BetPopup.tscn" id="3_aug50"]
+[ext_resource type="PackedScene" uid="uid://cq8vx7m5hdj2p" path="res://scenes/PayoutPopup.tscn" id="3_payout"]
+[ext_resource type="PackedScene" uid="uid://s1qstasvpebr" path="res://scenes/HelpPopup.tscn" id="4_78awf"]
+[ext_resource type="PackedScene" path="res://scenes/GameOverPopup.tscn" id="4_gameover"]
+[ext_resource type="PackedScene" uid="uid://c0oivkmtr8gao" path="res://scenes/LimitsPopup.tscn" id="4_kiw3p"]
+[ext_resource type="Texture2D" uid="uid://cxd5ghflln36j" path="res://assets/ui/chip_bet.png" id="4_s0nni"]
+[ext_resource type="PackedScene" uid="uid://rdncw6ifk1c2" path="res://scenes/SurvivalModeUI.tscn" id="4_survival"]
+[ext_resource type="Texture2D" uid="uid://pjrcoee4fq31" path="res://assets/ui/Tie.png" id="5_2rd6h"]
+[ext_resource type="Texture2D" uid="uid://c8pdumrqjxude" path="res://assets/ui/chip_bet_1.png" id="5_aug50"]
+[ext_resource type="Texture2D" uid="uid://c85dmnv0xhlrt" path="res://assets/ui/player_marker.png" id="5_g4kob"]
+[ext_resource type="Texture2D" uid="uid://bpjf6tt0ch2bw" path="res://assets/ui/Tie_win.png" id="6_7ua8r"]
+[ext_resource type="Texture2D" uid="uid://b5w6jvx0owvhw" path="res://assets/ui/player_marker_wins.png" id="6_qy1jj"]
+[ext_resource type="Texture2D" uid="uid://ychwh6o6frhy" path="res://assets/ui/banker_marker.png" id="7_3xj3m"]
+[ext_resource type="PackedScene" uid="uid://6nt8xcinibd0" path="res://scenes/flip_card.tscn" id="7_sv1m6"]
+[ext_resource type="Texture2D" uid="uid://tutby4vxvi2x" path="res://assets/ui/banker_marker_wins.png" id="8_mcffj"]
+[ext_resource type="Texture2D" uid="uid://dcyp1p7e010hj" path="res://assets/ui/Shuffle .png" id="14_7ua8r"]
+[ext_resource type="Texture2D" uid="uid://4ietsvpelka7" path="res://assets/ui/set.png" id="18_45i86"]
+[ext_resource type="PackedScene" path="res://scenes/SettingsPopup.tscn" id="18_kyk2p"]
+
+[node name="Game" type="Node2D"]
+script = ExtResource("1_aug50")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="ToastContainer" type="VBoxContainer" parent="UI"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 20.0
+offset_right = 300.0
+offset_bottom = 120.0
+grow_horizontal = 2
+
+[node name="TopUI" type="CanvasLayer" parent="."]
+layer = 128
+
+[node name="SurvivalModeUI" parent="TopUI" instance=ExtResource("4_survival")]
+
+[node name="Background" type="TextureRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 1920.0
+offset_bottom = 1080.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("1_qbsmt")
+
+[node name="BetPopup" parent="." instance=ExtResource("3_aug50")]
+
+[node name="PayoutPopup" parent="." instance=ExtResource("3_payout")]
+oversampling_override = 1.0
+size = Vector2i(246, 580)
+
+[node name="LimitsButton" type="Button" parent="."]
+visible = false
+offset_left = 1018.0
+offset_top = 191.0
+offset_right = 1101.0
+offset_bottom = 222.0
+scale = Vector2(1.5, 1.5)
+text = "ЛИМИТЫ"
+
+[node name="LimitsPopup" parent="." instance=ExtResource("4_kiw3p")]
+
+[node name="PlayerZone" type="Node2D" parent="."]
+
+[node name="Card1" type="TextureRect" parent="PlayerZone"]
+offset_left = 680.0
+offset_top = 395.0
+offset_right = 946.6666
+offset_bottom = 693.3335
+scale = Vector2(0.6, 0.6)
+mouse_filter = 2
+stretch_mode = 2
+
+[node name="Card2" type="TextureRect" parent="PlayerZone"]
+offset_left = 785.0
+offset_top = 395.0
+offset_right = 1001.6665
+offset_bottom = 616.6666
+scale = Vector2(0.6, 0.6)
+mouse_filter = 2
+stretch_mode = 2
+
+[node name="Card3" type="TextureRect" parent="PlayerZone"]
+visible = false
+z_index = 1
+offset_left = 910.0
+offset_top = 395.0
+offset_right = 1100.0
+offset_bottom = 623.3334
+scale = Vector2(0.6, 0.6)
+mouse_filter = 2
+stretch_mode = 2
+
+[node name="PlayerThirdCardToggle" type="TextureRect" parent="PlayerZone"]
+editor_description = "??"
+offset_left = 910.0
+offset_top = 395.0
+offset_right = 1098.3334
+offset_bottom = 643.3333
+scale = Vector2(0.6, 0.6)
+tooltip_text = "Карту Игроку?"
+mouse_filter = 0
+stretch_mode = 2
+
+[node name="BankerZone" type="Node2D" parent="."]
+
+[node name="Card1" type="TextureRect" parent="BankerZone"]
+offset_left = 305.0
+offset_top = 395.0
+offset_right = 446.6665
+offset_bottom = 611.6666
+scale = Vector2(0.6, 0.6)
+mouse_filter = 2
+stretch_mode = 2
+
+[node name="Card2" type="TextureRect" parent="BankerZone"]
+offset_left = 410.0
+offset_top = 395.0
+offset_right = 515.0
+offset_bottom = 563.3333
+scale = Vector2(0.6, 0.6)
+mouse_filter = 2
+stretch_mode = 2
+
+[node name="Card3" type="TextureRect" parent="BankerZone"]
+visible = false
+z_index = 1
+offset_left = 180.0
+offset_top = 395.0
+offset_right = 356.66666
+offset_bottom = 641.6666
+scale = Vector2(0.6, 0.6)
+mouse_filter = 2
+stretch_mode = 2
+
+[node name="BankerThirdCardToggle" type="TextureRect" parent="BankerZone"]
+editor_description = "??"
+offset_left = 180.0
+offset_top = 395.0
+offset_right = 351.66666
+offset_bottom = 636.6666
+scale = Vector2(0.6, 0.6)
+tooltip_text = "Карту банкиру?"
+mouse_filter = 0
+stretch_mode = 2
+
+[node name="OpenCard" type="Node" parent="."]
+
+[node name="FlipCard1" parent="OpenCard" instance=ExtResource("7_sv1m6")]
+position = Vector2(731, 416)
+scale = Vector2(0.6, 0.6)
+
+[node name="FlipCard2" parent="OpenCard" instance=ExtResource("7_sv1m6")]
+position = Vector2(836, 416)
+scale = Vector2(0.6, 0.6)
+
+[node name="FlipCard5" parent="OpenCard" instance=ExtResource("7_sv1m6")]
+position = Vector2(961.00006, 416)
+scale = Vector2(0.6, 0.6)
+
+[node name="FlipCard3" parent="OpenCard" instance=ExtResource("7_sv1m6")]
+position = Vector2(356, 416.00003)
+scale = Vector2(0.6, 0.6)
+
+[node name="FlipCard4" parent="OpenCard" instance=ExtResource("7_sv1m6")]
+position = Vector2(462.00003, 416)
+scale = Vector2(0.6, 0.6)
+
+[node name="FlipCard6" parent="OpenCard" instance=ExtResource("7_sv1m6")]
+position = Vector2(231, 416.00003)
+scale = Vector2(0.6, 0.6)
+
+[node name="CardsButton" type="Button" parent="."]
+offset_left = 36.0
+offset_top = 553.0
+offset_right = 205.0
+offset_bottom = 616.0
+theme_override_font_sizes/font_size = 40
+text = "Раздать"
+
+[node name="TieMarker" type="TextureButton" parent="."]
+offset_left = 538.0
+offset_top = 300.0
+offset_right = 1038.0
+offset_bottom = 800.0
+scale = Vector2(0.2, 0.2)
+texture_normal = ExtResource("5_2rd6h")
+texture_pressed = ExtResource("6_7ua8r")
+texture_hover = ExtResource("6_7ua8r")
+
+[node name="PlayerMarker" type="TextureButton" parent="."]
+offset_left = 730.0
+offset_top = 300.0
+offset_right = 1230.0
+offset_bottom = 800.0
+scale = Vector2(0.2, 0.2)
+texture_normal = ExtResource("5_g4kob")
+texture_pressed = ExtResource("6_qy1jj")
+texture_hover = ExtResource("6_qy1jj")
+
+[node name="BankerMarker" type="TextureButton" parent="."]
+offset_left = 355.0
+offset_top = 300.0
+offset_right = 855.0
+offset_bottom = 800.0
+scale = Vector2(0.2, 0.2)
+texture_normal = ExtResource("7_3xj3m")
+texture_pressed = ExtResource("8_mcffj")
+texture_hover = ExtResource("8_mcffj")
+
+[node name="HelpButton" type="Button" parent="."]
+custom_minimum_size = Vector2(40, 40)
+offset_left = 969.0
+offset_top = 6.0
+offset_right = 1018.0
+offset_bottom = 48.0
+theme_override_colors/font_color = Color(0.8745098, 0.7921569, 0.57254905, 0.35686275)
+theme_override_font_sizes/font_size = 24
+text = "?"
+
+[node name="HelpPopup" parent="." instance=ExtResource("4_78awf")]
+
+[node name="GameOverPopup" parent="." instance=ExtResource("4_gameover")]
+
+[node name="StatsLabel" type="Label" parent="."]
+offset_left = 595.0
+offset_top = -2.0
+offset_right = 806.0
+offset_bottom = 21.0
+scale = Vector2(1.5, 1.5)
+text = "Правильно: 0 | Ошибок: 0"
+
+[node name="BetChip" type="TextureButton" parent="."]
+offset_left = 267.99997
+offset_top = -102.0
+offset_right = 768.0
+offset_bottom = 398.0
+rotation = 0.17802358
+scale = Vector2(0.15, 0.15)
+pivot_offset = Vector2(250, 250)
+texture_normal = ExtResource("4_s0nni")
+texture_pressed = ExtResource("5_aug50")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(21, 465)
+scale = Vector2(1.24, 1.24)
+texture = ExtResource("14_7ua8r")
+
+[node name="TieChip" type="TextureButton" parent="."]
+visible = false
+offset_left = 399.00006
+offset_top = -31.999985
+offset_right = 899.00006
+offset_bottom = 468.0
+rotation = -0.059341196
+scale = Vector2(0.15, 0.15)
+pivot_offset = Vector2(250, 250)
+texture_normal = ExtResource("5_aug50")
+
+[node name="SettingsButton" type="Button" parent="."]
+offset_left = 1093.0
+offset_top = 4.9999847
+offset_right = 1627.0
+offset_bottom = 525.0
+scale = Vector2(0.1, 0.1)
+size_flags_horizontal = 4
+theme_override_icons/icon = ExtResource("18_45i86")
+text = "⚙︎"
+icon = ExtResource("18_45i86")
+
+[node name="SettingsPopup" parent="." instance=ExtResource("18_kyk2p")]
+
+[node name="PayoutTogglePlayer" type="Button" parent="."]
+offset_left = 1089.0
+offset_top = 81.0
+offset_right = 1146.0
+offset_bottom = 112.0
+text = "Игрок"
+
+[node name="PayoutToggleBanker" type="Button" parent="."]
+offset_left = 1082.0
+offset_top = 143.0
+offset_right = 1150.0
+offset_bottom = 174.0
+text = "Банкир"
+
+[node name="PayoutToggleTie" type="Button" parent="."]
+offset_left = 1075.0
+offset_top = 204.0
+offset_right = 1151.0
+offset_bottom = 235.0
+text = "Игалите"
+
+[connection signal="gui_input" from="PlayerZone/PlayerThirdCardToggle" to="." method="_on_player_third_card_toggle_gui_input"]
+[connection signal="gui_input" from="BankerZone/BankerThirdCardToggle" to="." method="_on_banker_third_card_toggle_gui_input"]
+[connection signal="pressed" from="CardsButton" to="." method="_on_cards_button_pressed"]
+[connection signal="pressed" from="TieMarker" to="." method="_on_tie_marker_pressed"]
+[connection signal="pressed" from="PlayerMarker" to="." method="_on_player_marker_pressed"]
+[connection signal="pressed" from="BankerMarker" to="." method="_on_banker_marker_pressed"]
+[connection signal="pressed" from="HelpButton" to="." method="_on_help_button_pressed"]
