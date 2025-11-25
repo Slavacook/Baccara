@@ -37,7 +37,7 @@ const PAYOUT_POPUP_MARGIN_TOP: int = 20
 const PAYOUT_POPUP_MARGIN_BOTTOM: int = 20
 
 # Цвета зон PayoutPopup
-const MAIN_PANEL_BG_COLOR: Color = Color(0.05, 0.05, 0.05, 0.8)      # Черный полупрозрачный (фон средней зоны)
+const MAIN_PANEL_BG_COLOR: Color = Color(0.051, 0.216, 0.051, 0.8)      # Черный полупрозрачный (фон средней зоны)
 const MAIN_PANEL_BORDER_COLOR: Color = Color(0.7, 0.5, 0.2, 0.8)     # Золотистая рамка
 const FLEET_PANEL_BG_COLOR: Color = Color(0.1, 0.1, 0.1, 0.7)        # Темно-серый (фон нижней зоны)
 const FLEET_PANEL_BORDER_COLOR: Color = Color(0.5, 0.5, 0.5, 0.6)    # Серая рамка
