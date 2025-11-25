@@ -31,29 +31,17 @@ const FONT_SIZE_COLLECTED_AMOUNT: int = 72
 const FONT_SIZE_PAYOUT_BUTTON: int = 26
 const FONT_SIZE_FEEDBACK_ERROR: int = 32
 
-# Размеры контейнеров
-const CHIP_STACKS_CONTAINER_HEIGHT: int = 360
-const RIGHT_SECTION_WIDTH: int = 250
-const PAYOUT_BUTTON_SIZE: Vector2 = Vector2(200, 60)
-
 # Отступы
 const PAYOUT_POPUP_MARGIN: int = 25
 const PAYOUT_POPUP_MARGIN_TOP: int = 20
 const PAYOUT_POPUP_MARGIN_BOTTOM: int = 20
 
-# PayoutPopupNew (новый дизайн с тремя зонами)
-const HEADER_ZONE_HEIGHT: int = 60              # Верхняя зона (узкая)
-const FLEET_ZONE_HEIGHT: int = 150              # Нижняя зона (средняя, увеличенная для фишек)
-const HINT_BUTTON_SIZE: Vector2 = Vector2(50, 50)  # Кнопка "?" (квадратная, скругленная)
-const AMOUNT_PANEL_SIZE: Vector2 = Vector2(120, 50)  # Панель суммы выплаты
-const ZONE_SEPARATION: int = 10                 # Отступ между зонами
-
-# Цвета зон PayoutPopupNew
-const MAIN_PANEL_BG_COLOR: Color = Color(0.05, 0.05, 0.05, 0.8)      # Черный полупрозрачный
+# Цвета зон PayoutPopup
+const MAIN_PANEL_BG_COLOR: Color = Color(0.05, 0.05, 0.05, 0.8)      # Черный полупрозрачный (фон средней зоны)
 const MAIN_PANEL_BORDER_COLOR: Color = Color(0.7, 0.5, 0.2, 0.8)     # Золотистая рамка
-const FLEET_PANEL_BG_COLOR: Color = Color(0.1, 0.1, 0.1, 0.7)        # Темно-серый
+const FLEET_PANEL_BG_COLOR: Color = Color(0.1, 0.1, 0.1, 0.7)        # Темно-серый (фон нижней зоны)
 const FLEET_PANEL_BORDER_COLOR: Color = Color(0.5, 0.5, 0.5, 0.6)    # Серая рамка
-const AMOUNT_PANEL_BG_COLOR: Color = Color(0.15, 0.15, 0.15, 0.9)    # Темный бокс
+const AMOUNT_PANEL_BG_COLOR: Color = Color(0.15, 0.15, 0.15, 0.9)    # Темный бокс (панель суммы)
 const AMOUNT_PANEL_BORDER_COLOR: Color = Color(0.5, 0.5, 0.5, 0.6)   # Серая рамка
 
 # ═══════════════════════════════════════════════════════════════════════════

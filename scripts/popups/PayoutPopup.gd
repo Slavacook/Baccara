@@ -5,19 +5,21 @@
 extends PopupPanel
 
 # ═══════════════════════════════════════════════════════════════════════════
-# UI ЭЛЕМЕНТЫ
+# UI ЭЛЕМЕНТЫ (обновленные пути)
 # ═══════════════════════════════════════════════════════════════════════════
 
 @onready var result_label = $MarginContainer/VBoxContainer/HeaderHBox/ResultLabel
 @onready var stake_label = $MarginContainer/VBoxContainer/HeaderHBox/StakeLabel
-@onready var collected_amount_label = $MarginContainer/VBoxContainer/CenterHBox/RightSection/CollectedAmount
+@onready var amount_panel = $MarginContainer/VBoxContainer/HeaderHBox/AmountPanel
+@onready var collected_amount_label = $MarginContainer/VBoxContainer/HeaderHBox/AmountPanel/CollectedAmountLabel
+@onready var payout_button = $MarginContainer/VBoxContainer/HeaderHBox/PayoutButton
+@onready var hint_button = $MarginContainer/VBoxContainer/HeaderHBox/HintButton
+@onready var main_panel = %MainPanel
 @onready var chip_stacks_container = %ChipStacksContainer
-@onready var chip_fleet_label = $MarginContainer/VBoxContainer/ChipFleetLabel
+@onready var fleet_panel = %FleetPanel
 @onready var chip_fleet_container = %ChipFleetContainer
-@onready var feedback_label = %FeedbackLabel  # ← Теперь в FeedbackContainer
-@onready var feedback_container = $FeedbackContainer  # ← Контейнер для управления видимостью
-@onready var payout_button = $MarginContainer/VBoxContainer/CenterHBox/RightSection/PayoutButton
-@onready var hint_button = $MarginContainer/VBoxContainer/CenterHBox/RightSection/HintButton
+@onready var feedback_label = %FeedbackLabel
+@onready var feedback_container = $FeedbackContainer
 
 # ═══════════════════════════════════════════════════════════════════════════
 # СИГНАЛЫ
@@ -64,9 +66,6 @@ func _ready():
 	_setup_window()
 	_setup_styles()
 
-	# Скрываем флот фишек label
-	chip_fleet_label.visible = false
-
 	# Скрываем контейнер обратной связи по умолчанию
 	feedback_container.visible = false
 
@@ -96,10 +95,7 @@ func show_payout(winner: String, stake: float, payout: float):
 	# Ставка рядом с заголовком
 	stake_label.text = Localization.t("PAYOUT_STAKE", [_format_amount(stake)])
 
-	# Кнопка "Выплата:"
-	payout_button.text = "Выплата:"
-
-	# Число справа внизу (начинаем с 0)
+	# Число в панели (начинаем с 0)
 	collected_amount_label.text = "0"
 
 	# Показываем попап с отступом сверху, чтобы не перекрывать Сердечки
@@ -134,7 +130,7 @@ func _on_stack_clicked(event: InputEvent, stack: ChipStack):
 func _on_total_changed(new_total: float):
 	collected_amount_label.text = _format_amount(new_total)
 
-# ← Обработка нажатия кнопки "Выплата:"
+# ← Обработка нажатия кнопки "Выплатить"
 func _on_payout_pressed():
 	if is_button_blocked:
 		return
@@ -189,19 +185,19 @@ func _setup_window():
 	)
 
 func _setup_styles():
-	# Фиолетовый фон в стиле велюрового стола баккара
-	var stylebox = StyleBoxFlat.new()
-	stylebox.bg_color = Color(0.45, 0.25, 0.55, 0.97)  # ← Вернули непрозрачность
-	stylebox.border_width_left = 3
-	stylebox.border_width_top = 3
-	stylebox.border_width_right = 3
-	stylebox.border_width_bottom = 3
-	stylebox.border_color = Color(0.7, 0.5, 0.2)  # ← Рамка непрозрачная
-	stylebox.corner_radius_top_left = 8
-	stylebox.corner_radius_top_right = 8
-	stylebox.corner_radius_bottom_left = 8
-	stylebox.corner_radius_bottom_right = 8
-	add_theme_stylebox_override("panel", stylebox)
+	# Фиолетовый фон окна в стиле велюрового стола баккара
+	var window_stylebox = StyleBoxFlat.new()
+	window_stylebox.bg_color = Color(0.45, 0.25, 0.55, 0.97)
+	window_stylebox.border_width_left = 3
+	window_stylebox.border_width_top = 3
+	window_stylebox.border_width_right = 3
+	window_stylebox.border_width_bottom = 3
+	window_stylebox.border_color = Color(0.7, 0.5, 0.2)  # Золотистая рамка
+	window_stylebox.corner_radius_top_left = 8
+	window_stylebox.corner_radius_top_right = 8
+	window_stylebox.corner_radius_bottom_left = 8
+	window_stylebox.corner_radius_bottom_right = 8
+	add_theme_stylebox_override("panel", window_stylebox)
 
 	# Отступы
 	$MarginContainer.add_theme_constant_override("margin_left", GameConstants.PAYOUT_POPUP_MARGIN)
@@ -209,68 +205,139 @@ func _setup_styles():
 	$MarginContainer.add_theme_constant_override("margin_top", GameConstants.PAYOUT_POPUP_MARGIN_TOP)
 	$MarginContainer.add_theme_constant_override("margin_bottom", GameConstants.PAYOUT_POPUP_MARGIN_BOTTOM)
 
-	# Заголовок
+	# === ЗАГОЛОВОК (ResultLabel) ===
 	result_label.add_theme_font_size_override("font_size", GameConstants.FONT_SIZE_RESULT_LABEL)
-	result_label.add_theme_color_override("font_color", Color(0.8, 0.15, 0.15))
 	result_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
 	result_label.add_theme_constant_override("outline_size", 3)
 
-	# Ставка
+	# === СТАВКА (StakeLabel) ===
 	stake_label.add_theme_font_size_override("font_size", GameConstants.FONT_SIZE_STAKE_LABEL)
-	stake_label.add_theme_color_override("font_color", Color(0.4, 0.7, 0.5))
+	stake_label.add_theme_color_override("font_color", Color(0.9, 0.8, 0.5))  # Золотистый
 
-	# Число справа
-	collected_amount_label.add_theme_font_size_override("font_size", GameConstants.FONT_SIZE_COLLECTED_AMOUNT)
-	collected_amount_label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85, 0.7))
+	# === ПАНЕЛЬ СУММЫ (AmountPanel) ===
+	var amount_style = StyleBoxFlat.new()
+	amount_style.bg_color = GameConstants.AMOUNT_PANEL_BG_COLOR
+	amount_style.border_width_left = 2
+	amount_style.border_width_top = 2
+	amount_style.border_width_right = 2
+	amount_style.border_width_bottom = 2
+	amount_style.border_color = GameConstants.AMOUNT_PANEL_BORDER_COLOR
+	amount_style.corner_radius_top_left = 6
+	amount_style.corner_radius_top_right = 6
+	amount_style.corner_radius_bottom_left = 6
+	amount_style.corner_radius_bottom_right = 6
+	amount_panel.add_theme_stylebox_override("panel", amount_style)
 
-	# Размеры контейнеров
-	chip_stacks_container.custom_minimum_size = Vector2(0, GameConstants.CHIP_STACKS_CONTAINER_HEIGHT)
-	chip_stacks_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Число (сумма выплаты)
+	collected_amount_label.add_theme_font_size_override("font_size", 36)
+	collected_amount_label.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95))
 
-	var right_section = $MarginContainer/VBoxContainer/CenterHBox/RightSection
-	right_section.custom_minimum_size = Vector2(GameConstants.RIGHT_SECTION_WIDTH, 0)
-	right_section.size_flags_horizontal = Control.SIZE_SHRINK_END
-
-	# Кнопка "Выплата:"
-	payout_button.text = "Выплата:"
+	# === КНОПКА "ВЫПЛАТИТЬ" (зеленая, яркая) ===
+	payout_button.text = "Выплатить"
 	payout_button.add_theme_font_size_override("font_size", GameConstants.FONT_SIZE_PAYOUT_BUTTON)
-	payout_button.custom_minimum_size = GameConstants.PAYOUT_BUTTON_SIZE
 
-	var button_style_normal = StyleBoxFlat.new()
-	button_style_normal.bg_color = Color(0.15, 0.45, 0.4)
-	button_style_normal.border_width_left = 3
-	button_style_normal.border_width_top = 3
-	button_style_normal.border_width_right = 3
-	button_style_normal.border_width_bottom = 3
-	button_style_normal.border_color = Color(0, 0, 0)
-	button_style_normal.corner_radius_top_left = 8
-	button_style_normal.corner_radius_top_right = 8
-	button_style_normal.corner_radius_bottom_left = 8
-	button_style_normal.corner_radius_bottom_right = 8
-	payout_button.add_theme_stylebox_override("normal", button_style_normal)
+	var payout_style_normal = StyleBoxFlat.new()
+	payout_style_normal.bg_color = Color(0.15, 0.6, 0.3)  # Зелёная
+	payout_style_normal.border_width_left = 3
+	payout_style_normal.border_width_top = 3
+	payout_style_normal.border_width_right = 3
+	payout_style_normal.border_width_bottom = 3
+	payout_style_normal.border_color = Color(0.7, 0.5, 0.2)  # Золотистая рамка
+	payout_style_normal.corner_radius_top_left = 8
+	payout_style_normal.corner_radius_top_right = 8
+	payout_style_normal.corner_radius_bottom_left = 8
+	payout_style_normal.corner_radius_bottom_right = 8
+	payout_button.add_theme_stylebox_override("normal", payout_style_normal)
 
-	var button_style_hover = StyleBoxFlat.new()
-	button_style_hover.bg_color = Color(0.2, 0.55, 0.5)
-	button_style_hover.border_width_left = 3
-	button_style_hover.border_width_top = 3
-	button_style_hover.border_width_right = 3
-	button_style_hover.border_width_bottom = 3
-	button_style_hover.border_color = Color(0.1, 0.1, 0.1)
-	button_style_hover.corner_radius_top_left = 8
-	button_style_hover.corner_radius_top_right = 8
-	button_style_hover.corner_radius_bottom_left = 8
-	button_style_hover.corner_radius_bottom_right = 8
-	payout_button.add_theme_stylebox_override("hover", button_style_hover)
+	var payout_style_hover = StyleBoxFlat.new()
+	payout_style_hover.bg_color = Color(0.2, 0.7, 0.4)
+	payout_style_hover.border_width_left = 3
+	payout_style_hover.border_width_top = 3
+	payout_style_hover.border_width_right = 3
+	payout_style_hover.border_width_bottom = 3
+	payout_style_hover.border_color = Color(0.8, 0.6, 0.3)
+	payout_style_hover.corner_radius_top_left = 8
+	payout_style_hover.corner_radius_top_right = 8
+	payout_style_hover.corner_radius_bottom_left = 8
+	payout_style_hover.corner_radius_bottom_right = 8
+	payout_button.add_theme_stylebox_override("hover", payout_style_hover)
 
 	payout_button.add_theme_color_override("font_color", Color(1, 1, 1))
+
+	# === КНОПКА "?" (подсказка) ===
+	hint_button.text = "?"
+	hint_button.add_theme_font_size_override("font_size", 28)
+
+	var hint_style_normal = StyleBoxFlat.new()
+	hint_style_normal.bg_color = Color(0.4, 0.3, 0.6)  # Фиолетовый
+	hint_style_normal.border_width_left = 2
+	hint_style_normal.border_width_top = 2
+	hint_style_normal.border_width_right = 2
+	hint_style_normal.border_width_bottom = 2
+	hint_style_normal.border_color = Color(0.7, 0.5, 0.2)
+	hint_style_normal.corner_radius_top_left = 8
+	hint_style_normal.corner_radius_top_right = 8
+	hint_style_normal.corner_radius_bottom_left = 8
+	hint_style_normal.corner_radius_bottom_right = 8
+	hint_button.add_theme_stylebox_override("normal", hint_style_normal)
+
+	var hint_style_hover = StyleBoxFlat.new()
+	hint_style_hover.bg_color = Color(0.5, 0.4, 0.7)
+	hint_style_hover.border_width_left = 2
+	hint_style_hover.border_width_top = 2
+	hint_style_hover.border_width_right = 2
+	hint_style_hover.border_width_bottom = 2
+	hint_style_hover.border_color = Color(0.8, 0.6, 0.3)
+	hint_style_hover.corner_radius_top_left = 8
+	hint_style_hover.corner_radius_top_right = 8
+	hint_style_hover.corner_radius_bottom_left = 8
+	hint_style_hover.corner_radius_bottom_right = 8
+	hint_button.add_theme_stylebox_override("hover", hint_style_hover)
+
+	hint_button.add_theme_color_override("font_color", Color(1, 1, 1))
+
+	# === ГЛАВНАЯ ПАНЕЛЬ (MainPanel - стопки фишек) ===
+	var main_style = StyleBoxFlat.new()
+	main_style.bg_color = GameConstants.MAIN_PANEL_BG_COLOR
+	main_style.border_width_left = 2
+	main_style.border_width_top = 2
+	main_style.border_width_right = 2
+	main_style.border_width_bottom = 2
+	main_style.border_color = GameConstants.MAIN_PANEL_BORDER_COLOR
+	main_style.corner_radius_top_left = 8
+	main_style.corner_radius_top_right = 8
+	main_style.corner_radius_bottom_left = 8
+	main_style.corner_radius_bottom_right = 8
+	main_panel.add_theme_stylebox_override("panel", main_style)
+
+	# Размеры контейнера стопок
+	chip_stacks_container.custom_minimum_size = Vector2(0, 240)  # ← Уменьшили высоту с 280 до 240
+	chip_stacks_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	chip_stacks_container.size_flags_vertical = Control.SIZE_SHRINK_BEGIN  # ← Выравнивание по верху
+	chip_stacks_container.add_theme_constant_override("separation", 5)  # ← Уменьшили с 10 до 5
+
+	# === ПАНЕЛЬ ФЛОТА (FleetPanel - кнопки фишек) ===
+	var fleet_style = StyleBoxFlat.new()
+	fleet_style.bg_color = GameConstants.FLEET_PANEL_BG_COLOR
+	fleet_style.border_width_left = 2
+	fleet_style.border_width_top = 2
+	fleet_style.border_width_right = 2
+	fleet_style.border_width_bottom = 2
+	fleet_style.border_color = GameConstants.FLEET_PANEL_BORDER_COLOR
+	fleet_style.corner_radius_top_left = 8
+	fleet_style.corner_radius_top_right = 8
+	fleet_style.corner_radius_bottom_left = 8
+	fleet_style.corner_radius_bottom_right = 8
+	fleet_panel.add_theme_stylebox_override("panel", fleet_style)
+
+	# Размеры контейнера флота
+	chip_fleet_container.add_theme_constant_override("separation", 10)
 
 # ← Создание кнопок для каждого номинала фишки
 func _create_chip_buttons():
 	# Очищаем контейнер
 	for child in chip_fleet_container.get_children():
 		child.queue_free()
-
-	chip_fleet_container.add_theme_constant_override("separation", 10)
 
 	for denomination in chip_denominations:
 		var button = TextureButton.new()
@@ -284,7 +351,7 @@ func _create_chip_buttons():
 		if texture:
 			button.texture_normal = texture
 		else:
-			push_warning("PayoutPopup: текстура не найдена: %s" % chip_path)
+			push_warning("PayoutPopupNew: текстура не найдена: %s" % chip_path)
 
 		# Подключаем сигналы
 		button.pressed.connect(_on_chip_clicked.bind(denomination))
@@ -297,18 +364,18 @@ func _set_result_header(winner: String):
 	match winner:
 		"Banker":
 			result_label.text = Localization.t("WIN_BANKER")
-			result_label.add_theme_color_override("font_color", Color(0.9, 0.2, 0.2))
+			result_label.add_theme_color_override("font_color", Color(0.9, 0.2, 0.2))  # Красный
 		"Player":
 			result_label.text = Localization.t("WIN_PLAYER")
-			result_label.add_theme_color_override("font_color", Color(0.2, 0.4, 0.9))
+			result_label.add_theme_color_override("font_color", Color(0.2, 0.4, 0.9))  # Синий
 		"Tie":
 			result_label.text = Localization.t("WIN_TIE")
-			result_label.add_theme_color_override("font_color", Color(0.9, 0.7, 0.2))
+			result_label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.4))  # Зелёный
 
 # ← Обновить номиналы фишек из GameModeManager
 func _update_chip_denominations():
 	chip_denominations = GameModeManager.get_chip_denominations()
-	print("PayoutPopup: Номиналы фишек обновлены: ", chip_denominations)
+	print("PayoutPopupNew: Номиналы фишек обновлены: ", chip_denominations)
 
 # ← Форматирование числа
 func _format_amount(amount: float) -> String:
@@ -324,7 +391,7 @@ func _format_amount(amount: float) -> String:
 func _show_success_animation():
 	feedback_container.visible = true
 	feedback_label.text = "Верно!"
-	feedback_label.add_theme_font_size_override("font_size", GameConstants.FONT_SIZE_RESULT_LABEL * 2)  # ← Крупнее
+	feedback_label.add_theme_font_size_override("font_size", GameConstants.FONT_SIZE_RESULT_LABEL * 2)
 	feedback_label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.2))
 	feedback_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
 	feedback_label.add_theme_constant_override("outline_size", 5)
@@ -341,7 +408,7 @@ func _show_error_animation(collected: float):
 	feedback_container.visible = true
 	var error_msg = validator.get_error_message(collected, expected_payout)
 	feedback_label.text = "Ошибка!\n%s" % error_msg
-	feedback_label.add_theme_font_size_override("font_size", GameConstants.FONT_SIZE_FEEDBACK_ERROR * 1.5)  # ← Крупнее
+	feedback_label.add_theme_font_size_override("font_size", GameConstants.FONT_SIZE_FEEDBACK_ERROR * 1.5)
 	feedback_label.add_theme_color_override("font_color", Color(0.9, 0.2, 0.2))
 	feedback_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
 	feedback_label.add_theme_constant_override("outline_size", 5)
