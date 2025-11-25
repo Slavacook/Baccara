@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://csqohix558l5u" path="res://assets/ui/table_background.png" id="1_qbsmt"]
 [ext_resource type="PackedScene" uid="uid://b8ribk4n0q8w1" path="res://scenes/BetPopup.tscn" id="3_aug50"]
 [ext_resource type="PackedScene" uid="uid://cq8vx7m5hdj2p" path="res://scenes/PayoutPopup.tscn" id="3_payout"]
+[ext_resource type="PackedScene" uid="uid://dw8vx7m5hdj3q" path="res://scenes/PayoutPopupNew.tscn" id="3_payout_new"]
 [ext_resource type="PackedScene" uid="uid://s1qstasvpebr" path="res://scenes/HelpPopup.tscn" id="4_78awf"]
 [ext_resource type="PackedScene" path="res://scenes/GameOverPopup.tscn" id="4_gameover"]
 [ext_resource type="PackedScene" uid="uid://c0oivkmtr8gao" path="res://scenes/LimitsPopup.tscn" id="4_kiw3p"]
@@ -57,6 +58,10 @@ texture = ExtResource("1_qbsmt")
 [node name="PayoutPopup" parent="." instance=ExtResource("3_payout")]
 oversampling_override = 1.0
 size = Vector2i(246, 580)
+visible = false
+process_mode = 4
+
+[node name="PayoutPopupNew" parent="." instance=ExtResource("3_payout_new")]
 
 [node name="LimitsButton" type="Button" parent="."]
 visible = false

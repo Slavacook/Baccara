@@ -41,16 +41,31 @@ const PAYOUT_POPUP_MARGIN: int = 25
 const PAYOUT_POPUP_MARGIN_TOP: int = 20
 const PAYOUT_POPUP_MARGIN_BOTTOM: int = 20
 
+# PayoutPopupNew (новый дизайн с тремя зонами)
+const HEADER_ZONE_HEIGHT: int = 60              # Верхняя зона (узкая)
+const FLEET_ZONE_HEIGHT: int = 150              # Нижняя зона (средняя, увеличенная для фишек)
+const HINT_BUTTON_SIZE: Vector2 = Vector2(50, 50)  # Кнопка "?" (квадратная, скругленная)
+const AMOUNT_PANEL_SIZE: Vector2 = Vector2(120, 50)  # Панель суммы выплаты
+const ZONE_SEPARATION: int = 10                 # Отступ между зонами
+
+# Цвета зон PayoutPopupNew
+const MAIN_PANEL_BG_COLOR: Color = Color(0.05, 0.05, 0.05, 0.8)      # Черный полупрозрачный
+const MAIN_PANEL_BORDER_COLOR: Color = Color(0.7, 0.5, 0.2, 0.8)     # Золотистая рамка
+const FLEET_PANEL_BG_COLOR: Color = Color(0.1, 0.1, 0.1, 0.7)        # Темно-серый
+const FLEET_PANEL_BORDER_COLOR: Color = Color(0.5, 0.5, 0.5, 0.6)    # Серая рамка
+const AMOUNT_PANEL_BG_COLOR: Color = Color(0.15, 0.15, 0.15, 0.9)    # Темный бокс
+const AMOUNT_PANEL_BORDER_COLOR: Color = Color(0.5, 0.5, 0.5, 0.6)   # Серая рамка
+
 # ═══════════════════════════════════════════════════════════════════════════
 # ФИШКИ (CHIPS)
 # ═══════════════════════════════════════════════════════════════════════════
 
 const CHIP_STACK_MAX_CHIPS: int = 20          # Максимум фишек в одной стопке
-const CHIP_STACK_SLOT_COUNT_SMALL: int = 6    # Количество слотов (малый режим)
-const CHIP_STACK_SLOT_COUNT_LARGE: int = 10   # Количество слотов (большой режим)
-const CHIP_STACK_SCALE_SMALL: float = 1.0     # Масштаб фишек (малый режим)
+const CHIP_STACK_SLOT_COUNT_SMALL: int = 9    # Количество слотов (малый режим) ← Увеличили с 8 до 9
+const CHIP_STACK_SLOT_COUNT_LARGE: int = 13   # Количество слотов (большой режим) ← Увеличили с 10 до 13
+const CHIP_STACK_SCALE_SMALL: float = 0.75    # Масштаб фишек (малый режим) ← Средний размер (было 1.0)
 const CHIP_STACK_SCALE_LARGE: float = 0.6     # Масштаб фишек (большой режим)
-const CHIP_STACK_SLOT_HEIGHT: int = 336       # Фиксированная высота слота
+const CHIP_STACK_SLOT_HEIGHT: int = 240       # Фиксированная высота слота ← Уменьшили с 280 до 240
 const CHIP_BUTTON_SIZE: Vector2 = Vector2(90, 90)  # Размер кнопки фишки в флоте
 
 # ═══════════════════════════════════════════════════════════════════════════

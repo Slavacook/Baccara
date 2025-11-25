@@ -48,7 +48,7 @@ func _ready():
 	limits_button.pressed.connect(_on_limits_button_pressed)
 	limits_popup.limits_changed.connect(limits_manager.set_limits)
 	limits_manager.limits_changed.connect(_on_limits_changed)
-	payout_popup = get_node("PayoutPopup")
+	payout_popup = get_node("PayoutPopupNew")  # ← Используем новый попап
 	payout_popup.payout_confirmed.connect(_on_payout_confirmed)
 	payout_popup.hint_used.connect(_on_hint_used)
 	survival_ui = get_node("TopUI/SurvivalModeUI")  # ← Обновили путь
