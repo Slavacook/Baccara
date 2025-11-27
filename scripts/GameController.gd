@@ -204,7 +204,7 @@ func _format_result() -> String:
 		return "Натуральная %d против %d" % [p0 if p0 >= 8 else b0, b0 if p0 >= 8 else p0]
 	return "%d против %d" % [BaccaratRules.hand_value(phase_manager.banker_hand), BaccaratRules.hand_value(phase_manager.player_hand)]
 
-# ← Форматирование краткого тоста победы (например, "Банкир: 7 vs 5")
+# ← Форматирование краткого тоста победы (например, "Выигрывает Банкир: 7 vs 5")
 func _format_victory_toast(winner: String) -> String:
 	var player_score = BaccaratRules.hand_value(phase_manager.player_hand)
 	var banker_score = BaccaratRules.hand_value(phase_manager.banker_hand)
@@ -215,7 +215,7 @@ func _format_victory_toast(winner: String) -> String:
 		"Player":
 			return Localization.t("VICTORY_PLAYER", [player_score, banker_score])
 		"Tie":
-			return Localization.t("VICTORY_TIE", [player_score, banker_score])
+			return Localization.t("VICTORY_TIE")  # Без параметров
 		_:
 			return "???"
 

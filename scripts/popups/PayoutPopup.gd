@@ -408,9 +408,8 @@ func _show_error_animation(collected: float):
 
 	# Показываем локальный overlay внутри попапа
 	feedback_container.visible = true
-	var error_msg = validator.get_error_message(collected, expected_payout)
-	feedback_label.text = "Ошибка!\n%s" % error_msg
-	feedback_label.add_theme_font_size_override("font_size", GameConstants.FONT_SIZE_FEEDBACK_ERROR * 1.5)
+	feedback_label.text = "Ошибка!"
+	feedback_label.add_theme_font_size_override("font_size", GameConstants.FONT_SIZE_RESULT_LABEL * 2)
 	feedback_label.add_theme_color_override("font_color", Color(0.9, 0.2, 0.2))
 	feedback_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
 	feedback_label.add_theme_constant_override("outline_size", 5)
