@@ -45,9 +45,10 @@ func deal_first_four():
 	if not PayoutSettingsManager.has_any_active_bet():
 		EventBus.show_toast_info.emit(Localization.t("DAMIKU"))
 
-	# Зум на карты при раздаче
-	if game_controller:
+	# Зум на карты только при первой раздаче
+	if game_controller and game_controller.is_first_deal:
 		game_controller.camera_zoom_in()
+		game_controller.is_first_deal = false
 
 	player_hand = [deck.draw(), deck.draw()]
 	banker_hand = [deck.draw(), deck.draw()]

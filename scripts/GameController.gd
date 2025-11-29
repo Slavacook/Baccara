@@ -324,6 +324,11 @@ func _on_payout_confirmed(is_correct: bool, collected: float, expected: float):
 
 func _on_survival_game_over(_rounds: int):
 	print("🎮 GAME OVER! Раундов выжито: %d" % survival_rounds_completed)
+
+	# Зум аут до общего плана при Game Over
+	camera_zoom_out()
+	is_first_deal = true  # Следующая раздача будет первой (с зумом)
+
 	game_over_popup.show_game_over(survival_rounds_completed)
 
 	# Автоматический рестарт через 3 секунды
@@ -332,6 +337,11 @@ func _on_survival_game_over(_rounds: int):
 
 func _on_score_game_over():
 	print("🎮 GAME OVER! Очки упали ниже 0")
+
+	# Зум аут до общего плана при Game Over
+	camera_zoom_out()
+	is_first_deal = true  # Следующая раздача будет первой (с зумом)
+
 	var final_score = SaveManager.instance.score
 	game_over_popup.show_game_over_score(final_score)
 
@@ -341,6 +351,7 @@ func _on_score_game_over():
 
 func _on_restart_game():
 	survival_rounds_completed = 0
+	is_first_deal = true  # После рестарта первая раздача с зумом
 	StatsManager.instance.reset()
 	if is_survival_mode:
 		survival_ui.reset()
@@ -464,6 +475,13 @@ func _check_payout_return():
 		survival_rounds_completed = GameDataManager.survival_rounds
 		survival_ui.current_lives = GameDataManager.survival_lives
 		survival_ui.is_active = GameDataManager.is_survival_active
+
+		# Восстанавливаем приближенное состояние камеры (без анимации)
+		if camera:
+			camera.position = CAMERA_POS_CARDS
+			camera.zoom = CAMERA_ZOOM_CARDS
+			is_first_deal = false  # Уже не первая раздача
+			print("📷 Камера восстановлена: приближенный план")
 
 		# Обновляем визуальное отображение сердечек
 		if survival_ui.is_active:
